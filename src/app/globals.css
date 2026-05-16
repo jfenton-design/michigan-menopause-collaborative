@@ -528,7 +528,7 @@ button { font: inherit; cursor: pointer; }
   }
 
   /* hero: photo first, text second */
-  .hero-photo { order: -1; padding-top: 0 !important; padding-bottom: 0 !important; }
+  .hero-photo { order: -1; padding-top: 16px !important; padding-bottom: 0 !important; }
   .hero-text  { padding-top: 24px !important; }
 
   /* hide "The room" pill — too intrusive at mobile crop */
