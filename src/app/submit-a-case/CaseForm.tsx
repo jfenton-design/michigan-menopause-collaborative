@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { submitCase, type CaseFormState } from "./actions";
 import { UPCOMING_MEETINGS } from "@/lib/data";
@@ -9,6 +9,12 @@ const initial: CaseFormState = { status: "idle" };
 
 export function CaseForm() {
   const [state, action] = useActionState(submitCase, initial);
+
+  useEffect(() => {
+    if (state.status === "ok") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [state.status]);
 
   if (state.status === "ok") {
     return (
