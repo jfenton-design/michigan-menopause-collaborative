@@ -1,6 +1,7 @@
 "use server";
 
 import { appendSubmission } from "@/lib/storage";
+import { appendCase } from "@/lib/sheets";
 import { sendNotification } from "@/lib/email";
 
 export type CaseFormState =
@@ -39,35 +40,26 @@ export async function submitCase(
   const payload = { name, credentials, email, phone, targetMeeting, summary, question };
 
   try {
-    await appendSubmission({
-      kind: "case",
-      receivedAt: new Date().toISOString(),
-      payload,
-    });
-  } catch (err) {
-    return {
-      status: "error",
-      message:
-        "We couldn't save your submission. Please email us at hello@michiganmenopause.com.",
-    };
+    await appendSubmission({ kind: "case", receivedAt: new Date().toISOString(), payload });
+  } catch {
+    return { status: "error", message: "We couldn't save your submission. Please email drleff@drcarrieleff.com." };
   }
 
-  await sendNotification({
+  void appendCase(payload);
+
+  void sendNotification({
     subject: `Case submission — ${name}`,
+    title: `New case submission — ${name}`,
     replyTo: email,
-    text: [
-      `Name: ${name}`,
-      `Credentials: ${credentials}`,
-      `Email: ${email}`,
-      `Phone: ${phone}`,
-      `Target meeting: ${targetMeeting}`,
-      ``,
-      `Case summary:`,
-      summary,
-      ``,
-      `Question for the room:`,
-      question,
-    ].join("\n"),
+    rows: [
+      { label: "Name",           value: name },
+      { label: "Credentials",    value: credentials },
+      { label: "Email",          value: email },
+      { label: "Phone",          value: phone },
+      { label: "Target meeting", value: targetMeeting },
+      { label: "Case summary",   value: summary },
+      { label: "Question",       value: question },
+    ],
   });
 
   return { status: "ok" };

@@ -1,6 +1,7 @@
 "use server";
 
 import { appendSubmission } from "@/lib/storage";
+import { appendRsvp } from "@/lib/sheets";
 import { sendNotification } from "@/lib/email";
 import { UPCOMING_MEETINGS } from "@/lib/data";
 
@@ -47,53 +48,38 @@ export async function submitRsvp(
 
   const meetingLabel = `${meeting.quarter} — ${meeting.month} ${meeting.day}, ${meeting.year}`;
 
+  const payload = {
+    meetingId, meetingLabel, attendingRaw,
+    name, credentials, email, phone, practice,
+    guestCount, guestNames, dietary, notes,
+  };
+
   try {
-    await appendSubmission({
-      kind: "rsvp",
-      receivedAt: new Date().toISOString(),
-      payload: {
-        meetingId,
-        meetingLabel,
-        attendingRaw,
-        name,
-        credentials,
-        email,
-        phone,
-        practice,
-        guestCount,
-        guestNames,
-        dietary,
-        notes,
-      },
-    });
+    await appendSubmission({ kind: "rsvp", receivedAt: new Date().toISOString(), payload });
   } catch {
-    return {
-      status: "error",
-      message:
-        "We couldn't save your RSVP. Please email hello@michiganmenopause.com.",
-    };
+    return { status: "error", message: "We couldn't save your RSVP. Please email drleff@drcarrieleff.com." };
   }
 
-  await sendNotification({
+  // Fire-and-forget — don't block the response on these
+  void appendRsvp(payload);
+
+  void sendNotification({
     subject: `RSVP — ${name} — ${meetingLabel} (${attendingRaw || "yes"})`,
+    title: `New RSVP — ${meetingLabel}`,
     replyTo: email,
-    text: [
-      `Meeting: ${meetingLabel}`,
-      `Attending: ${attendingRaw || "yes"}`,
-      ``,
-      `Name: ${name}`,
-      `Credentials: ${credentials}`,
-      `Email: ${email}`,
-      `Phone: ${phone}`,
-      `Practice: ${practice}`,
-      ``,
-      `Guests: ${guestCount}`,
-      guestNames ? `Guest names: ${guestNames}` : "",
-      dietary ? `Dietary notes: ${dietary}` : "",
-      notes ? `Notes: ${notes}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n"),
+    rows: [
+      { label: "Meeting",     value: meetingLabel },
+      { label: "Attending",   value: attendingRaw || "yes" },
+      { label: "Name",        value: name },
+      { label: "Credentials", value: credentials },
+      { label: "Email",       value: email },
+      { label: "Phone",       value: phone },
+      { label: "Practice",    value: practice },
+      { label: "Guests",      value: String(guestCount) },
+      { label: "Guest names", value: guestNames },
+      { label: "Dietary",     value: dietary },
+      { label: "Notes",       value: notes },
+    ],
   });
 
   return { status: "ok", meetingLabel, attending };
