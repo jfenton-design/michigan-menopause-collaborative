@@ -2,26 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { RsvpForm } from "./RsvpForm";
-import { NEXT_MEETING, RSVP_MEETING_OPTIONS, UPCOMING_MEETINGS } from "@/lib/data";
+import { NEXT_MEETING } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "RSVP",
   description: `RSVP for the next Michigan Menopause Collaborative meeting — ${NEXT_MEETING.quarter}, ${NEXT_MEETING.month} ${NEXT_MEETING.day}.`,
 };
 
-type SearchParams = { [key: string]: string | string[] | undefined };
-
-export default async function RsvpPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const params = await searchParams;
-  const requested = (Array.isArray(params.meeting) ? params.meeting[0] : params.meeting) || "";
-  const validIds = new Set(RSVP_MEETING_OPTIONS.map((m) => m.id));
-  const defaultMeeting = validIds.has(requested) ? requested : NEXT_MEETING.id;
-  const selected =
-    UPCOMING_MEETINGS.find((m) => m.id === defaultMeeting) ?? NEXT_MEETING;
+export default async function RsvpPage() {
+  const selected = NEXT_MEETING;
 
   return (
     <>
@@ -45,7 +34,7 @@ export default async function RsvpPage({
             alignItems: "start",
           }}
         >
-          <RsvpForm defaultMeeting={defaultMeeting} />
+          <RsvpForm defaultMeeting={selected.id} />
 
           <aside
             style={{

@@ -3,7 +3,6 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitRsvp, type RsvpFormState } from "./actions";
-import { RSVP_MEETING_OPTIONS } from "@/lib/data";
 
 const initial: RsvpFormState = { status: "idle" };
 
@@ -70,14 +69,7 @@ export function RsvpForm({ defaultMeeting }: { defaultMeeting: string }) {
         aria-hidden="true"
       />
 
-      <div className="field">
-        <label htmlFor="rsvp-meeting">Meeting</label>
-        <select id="rsvp-meeting" name="meeting" required defaultValue={defaultMeeting}>
-          {RSVP_MEETING_OPTIONS.map((m) => (
-            <option key={m.id} value={m.id}>{m.label}</option>
-          ))}
-        </select>
-      </div>
+      <input type="hidden" name="meeting" value={defaultMeeting} />
 
       <div className="field">
         <label htmlFor="rsvp-attending">Will you attend?</label>
