@@ -401,14 +401,14 @@ button { font: inherit; cursor: pointer; }
 }
 .dir-header {
   display: grid;
-  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1.4fr) auto;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 24px;
   padding: 16px 0;
   border-bottom: 1px solid var(--rule);
 }
 .dir-row {
   display: grid;
-  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1.4fr) auto;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 24px;
   padding: 20px 0;
   border-bottom: 1px solid var(--rule);
@@ -424,6 +424,9 @@ button { font: inherit; cursor: pointer; }
   letter-spacing: 0.04em;
   white-space: nowrap;
 }
+
+/* ---------- hero reorder wrapper ---------- */
+.hero-wrap { display: flex; flex-direction: column; }
 
 /* ---------- responsive layout helpers ---------- */
 /* .grid-2  →  single column at ≤ 640px */
@@ -520,4 +523,11 @@ button { font: inherit; cursor: pointer; }
   .grid-4 {
     grid-template-columns: 1fr !important;
   }
+
+  /* hero: photo first, text second */
+  .hero-photo { order: -1; padding-top: 0 !important; padding-bottom: 0 !important; }
+  .hero-text  { padding-top: 24px !important; }
+
+  /* hide "The room" pill — too intrusive at mobile crop */
+  .photo-caption { display: none; }
 }

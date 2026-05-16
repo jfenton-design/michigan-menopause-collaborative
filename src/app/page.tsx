@@ -25,8 +25,9 @@ const VALUE_PROPS = [
 export default function HomePage() {
   return (
     <>
+      <div className="hero-wrap">
       {/* Hero */}
-      <section className="page section" style={{ paddingTop: 48, paddingBottom: 40 }}>
+      <section className="page section hero-text" style={{ paddingTop: 48, paddingBottom: 40 }}>
         <div className="eyebrow" style={{ marginBottom: 22 }}>
           Est. 2026 · Southeast Michigan · A peer society
         </div>
@@ -56,7 +57,7 @@ export default function HomePage() {
       </section>
 
       {/* Founding-meeting photograph — editorial anchor */}
-      <section className="page" style={{ paddingTop: 8, paddingBottom: 8 }}>
+      <section className="page hero-photo" style={{ paddingTop: 8, paddingBottom: 8 }}>
         <figure style={{ margin: 0 }}>
           <div
             style={{
@@ -83,6 +84,7 @@ export default function HomePage() {
               }}
             />
             <div
+              className="photo-caption"
               style={{
                 position: "absolute",
                 left: 20,
@@ -142,6 +144,7 @@ export default function HomePage() {
           </figcaption>
         </figure>
       </section>
+      </div>
 
       {/* Next meeting hero */}
       <section className="page section" style={{ paddingTop: 56, paddingBottom: 80 }}>
