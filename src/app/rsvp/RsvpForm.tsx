@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { submitRsvp, type RsvpFormState } from "./actions";
 
@@ -8,6 +8,12 @@ const initial: RsvpFormState = { status: "idle" };
 
 export function RsvpForm({ defaultMeeting }: { defaultMeeting: string }) {
   const [state, action] = useActionState(submitRsvp, initial);
+
+  useEffect(() => {
+    if (state.status === "ok") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [state.status]);
 
   if (state.status === "ok") {
     return (
@@ -26,18 +32,9 @@ export function RsvpForm({ defaultMeeting }: { defaultMeeting: string }) {
           {state.attending ? "We'll see you there." : "We'll catch you next quarter."}
         </div>
         <p style={{ margin: 0, color: "var(--ink-2)" }}>
-          {state.attending ? (
-            <>
-              You&apos;re on the list for{" "}
-              <strong style={{ color: "var(--ink)" }}>{state.meetingLabel}</strong>.
-              We&apos;ll send a calendar invite and the reading list a week before.
-            </>
-          ) : (
-            <>
-              Noted for {state.meetingLabel}. Reading list and notes will still be
-              shared with members afterwards.
-            </>
-          )}
+          {state.attending
+            ? "You should have a calendar invite in your inbox."
+            : "Noted. Reading list and notes will still be shared with members afterwards."}
         </p>
       </div>
     );
