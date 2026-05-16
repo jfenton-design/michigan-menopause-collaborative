@@ -113,6 +113,7 @@ export default function HomePage() {
             </div>
           </div>
           <figcaption
+            className="grid-2"
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.4fr)",
@@ -148,7 +149,7 @@ export default function HomePage() {
       </section>
 
       {/* Mission */}
-      <section className="page section" style={{ paddingTop: 24 }}>
+      <section id="mission" className="page section" style={{ paddingTop: 24 }}>
         <SectionHeading
           eyebrow="The mission"
           title={<>Midlife women&apos;s care, <em>improved together</em>.</>}
@@ -160,6 +161,7 @@ export default function HomePage() {
             gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
             gap: 56,
           }}
+          className="grid-3"
         >
           {VALUE_PROPS.map((c) => (
             <div key={c.n}>
@@ -198,6 +200,7 @@ export default function HomePage() {
           }
         />
         <div
+          className="grid-2"
           style={{
             display: "grid",
             gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)",
@@ -249,6 +252,7 @@ export default function HomePage() {
       {/* Membership */}
       <section className="page section" style={{ paddingTop: 0 }}>
         <div
+          className="grid-2"
           style={{
             borderTop: "1px solid var(--rule-strong)",
             paddingTop: 40,

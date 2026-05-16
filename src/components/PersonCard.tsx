@@ -1,59 +1,25 @@
 import type { Person } from "@/lib/data";
 
-export function PersonCard({ p, large = false }: { p: Person; large?: boolean }) {
+export function PersonCard({ p }: { p: Person }) {
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: large ? "minmax(220px, 280px) 1fr" : "1fr",
-        gap: large ? 40 : 20,
-        padding: large ? "32px 0" : "24px 0",
-        borderTop: "1px solid var(--rule-strong)",
-      }}
-    >
-      <div
-        className="placeholder-stripes"
-        style={{
-          aspectRatio: large ? "4/5" : "1/1",
-          minHeight: large ? 320 : 180,
-        }}
-      >
+    <div className="person-card">
+      <div className="placeholder-stripes person-card__portrait">
         portrait · {p.name.split(" ")[1] || p.name}
       </div>
-      <div>
+      <div className="person-card__body">
         <div className="eyebrow" style={{ marginBottom: 12, color: "var(--accent)" }}>
           {p.role}
         </div>
         <h3
-          className="display"
-          style={{
-            margin: 0,
-            fontSize: large ? "clamp(32px, 3.6vw, 52px)" : 26,
-            lineHeight: 1,
-          }}
+          className="display person-card__name"
         >
           {p.name}
         </h3>
-        <div
-          style={{
-            fontSize: 14,
-            color: "var(--ink-soft)",
-            marginTop: 8,
-            fontFamily: "var(--font-mono)",
-          }}
-        >
+        <div style={{ fontSize: 14, color: "var(--ink-soft)", marginTop: 8, fontFamily: "var(--font-mono)" }}>
           {p.credentials}
         </div>
         {p.bio && (
-          <p
-            style={{
-              marginTop: 22,
-              fontSize: large ? 17 : 15,
-              lineHeight: 1.55,
-              color: "var(--ink-2)",
-              maxWidth: "52ch",
-            }}
-          >
+          <p style={{ marginTop: 22, fontSize: 17, lineHeight: 1.55, color: "var(--ink-2)", maxWidth: "52ch" }}>
             {p.bio}
           </p>
         )}

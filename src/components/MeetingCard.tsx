@@ -13,6 +13,7 @@ export function MeetingCard({
   if (variant === "hero") {
     return (
       <article
+        className="meeting-hero"
         style={{
           display: "grid",
           gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",

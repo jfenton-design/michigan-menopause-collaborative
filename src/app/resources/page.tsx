@@ -21,6 +21,7 @@ export default function ResourcesPage() {
         {current.map((r, i) => (
           <article
             key={i}
+            className="grid-2"
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)",

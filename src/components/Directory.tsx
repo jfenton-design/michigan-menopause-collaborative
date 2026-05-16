@@ -23,16 +23,7 @@ export function Directory() {
 
   return (
     <>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.6fr 1fr auto",
-          gap: 16,
-          alignItems: "end",
-          paddingBottom: 24,
-          borderBottom: "1px solid var(--rule-strong)",
-        }}
-      >
+      <div className="dir-filters">
         <div className="field">
           <label htmlFor="dir-q">Search name, specialty, city</label>
           <input
@@ -50,28 +41,12 @@ export function Directory() {
             ))}
           </select>
         </div>
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            color: "var(--ink-soft)",
-            letterSpacing: "0.06em",
-            paddingBottom: 14,
-          }}
-        >
+        <div className="dir-count">
           {filtered.length} of {MEMBERS.length} members
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1.4fr) auto",
-          gap: 24,
-          padding: "16px 0",
-          borderBottom: "1px solid var(--rule)",
-        }}
-      >
+      <div className="dir-header">
         {["Member", "Specialty", "Location", "Practice"].map((h) => (
           <div key={h} className="eyebrow">{h}</div>
         ))}

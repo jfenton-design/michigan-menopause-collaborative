@@ -15,12 +15,12 @@ export default function LeadershipPage() {
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
-        <PersonCard p={LEADERSHIP[0]} large />
-        {LEADERSHIP.slice(1).map((p) => (
+        {LEADERSHIP.map((p) => (
           <PersonCard key={p.role} p={p} />
         ))}
 
         <div
+          className="grid-2"
           style={{
             marginTop: 56,
             borderTop: "1px solid var(--rule-strong)",

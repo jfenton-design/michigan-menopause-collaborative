@@ -41,6 +41,7 @@ export default function MeetingsPage() {
           title="A rhythm built around the year"
         />
         <div
+          className="grid-4"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(4, minmax(0, 1fr))",

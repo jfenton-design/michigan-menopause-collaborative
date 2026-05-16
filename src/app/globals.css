@@ -307,13 +307,217 @@ button { font: inherit; cursor: pointer; }
   font-size: 14px;
 }
 
+/* ---------- hamburger / mobile nav ---------- */
+.nav__hamburger {
+  display: none;
+  background: none;
+  border: 0;
+  padding: 6px;
+  color: var(--ink);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  transition: background .12s;
+}
+.nav__hamburger:hover { background: var(--paper-2); }
+
+.nav__drawer {
+  display: none;
+  position: fixed;
+  top: 65px; /* nav height */
+  left: 0; right: 0;
+  z-index: 49;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  padding: 24px var(--pad-page) 32px;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 8px 32px -8px rgba(31, 21, 53, 0.14);
+}
+
+.nav__drawer-link {
+  display: block;
+  padding: 14px 0;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink-2);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.nav__drawer-link:last-of-type { border-bottom: 0; }
+.nav__drawer-link[aria-current="page"] { color: var(--accent); font-weight: 500; }
+.nav__drawer-link:hover { color: var(--ink); }
+
+.nav__drawer-rsvp {
+  margin-top: 20px;
+  align-self: flex-start;
+}
+
+.nav__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 48;
+  background: rgba(31, 21, 53, 0.3);
+  backdrop-filter: blur(2px);
+}
+
+/* ---------- person card ---------- */
+.person-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 40px;
+  padding: 32px 0;
+  border-top: 1px solid var(--rule-strong);
+}
+.person-card__portrait {
+  aspect-ratio: 4/5;
+  min-height: 320px;
+}
+.person-card__name {
+  margin: 0;
+  font-size: clamp(32px, 3.6vw, 52px);
+  line-height: 1;
+}
+
+/* ---------- directory ---------- */
+.dir-filters {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+.dir-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.06em;
+  padding-bottom: 14px;
+  white-space: nowrap;
+}
+.dir-header {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1.4fr) auto;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.dir-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1.4fr) auto;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: center;
+}
+.dir-row__specialty { font-size: 14px; color: var(--ink-2); }
+.dir-row__location  { font-size: 14px; color: var(--ink-soft); }
+.dir-row__link {
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ---------- responsive layout helpers ---------- */
+/* .grid-2  →  single column at ≤ 640px */
+/* .grid-3  →  single column at ≤ 640px, 2-col at 641–880px */
+/* .grid-4  →  2-col at ≤ 880px, single at ≤ 480px */
+/* .page-split  →  single column at ≤ 880px (form + sidebar) */
+/* .meeting-hero  →  single column at ≤ 640px */
+
 /* ---------- responsive ---------- */
 @media (max-width: 880px) {
   :root {
     --pad-page: 24px;
     --pad-section: 56px;
   }
+
+  /* show hamburger, hide desktop links */
   .nav__links { display: none; }
+  .nav__hamburger { display: flex; }
+  .nav__drawer { display: flex; }
+  .nav__overlay { display: block; }
+
+  /* footer */
   .footer__inner { grid-template-columns: 1fr; gap: 40px; }
+
+  /* form rows */
   .field-row { grid-template-columns: 1fr; }
+
+  /* form + sidebar layouts */
+  .page-split {
+    grid-template-columns: 1fr !important;
+    gap: 48px !important;
+  }
+
+  /* 4-column seasonal cadence → 2 columns */
+  .grid-4 {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+  }
+
+  /* person cards → single column portrait stacked */
+  .person-card {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .person-card__portrait { min-height: 260px; aspect-ratio: 3/2; }
+  .person-card__name { font-size: clamp(28px, 5vw, 40px); }
+
+  /* SectionHeading: stop forcing 2-col */
+}
+
+@media (max-width: 640px) {
+  /* 2-column grids → single column */
+  .grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  /* 3-column value props → single column */
+  .grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+
+  /* meeting hero card → single column */
+  .meeting-hero {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  /* directory: hide columns, make rows readable */
+  .dir-filters {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .dir-count { padding-bottom: 0; }
+  .dir-header { display: none; }
+  .dir-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 20px 0;
+  }
+  .dir-row__specialty::before { content: "Specialty  "; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+  .dir-row__location::before  { content: "Location  "; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+
+  /* archive articles in resources */
+  article[style*="120px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* person card portrait square on small mobile */
+  .person-card__portrait { aspect-ratio: 1/1; min-height: 200px; }
+
+  /* 4-column → single column at small mobile */
+  .grid-4 {
+    grid-template-columns: 1fr !important;
+  }
 }

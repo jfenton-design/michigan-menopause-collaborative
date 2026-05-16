@@ -15,6 +15,7 @@ export default function SubmitPage() {
 
       <section className="page section" style={{ paddingTop: 24 }}>
         <div
+          className="page-split"
           style={{
             display: "grid",
             gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)",
