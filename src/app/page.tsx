@@ -83,65 +83,7 @@ export default function HomePage() {
                 objectPosition: "center 35%",
               }}
             />
-            <div
-              className="photo-caption"
-              style={{
-                position: "absolute",
-                left: 20,
-                bottom: 20,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "8px 14px",
-                background: "rgba(0, 0, 0, 0.55)",
-                backdropFilter: "blur(6px)",
-                borderRadius: "var(--radius-pill)",
-                color: "rgba(255, 255, 255, 0.92)",
-                fontFamily: "var(--font-mono)",
-                fontSize: 10,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-              }}
-            >
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 999,
-                  background: "var(--accent-2)",
-                }}
-              />
-              The room · Spring 2026
-            </div>
           </div>
-          <figcaption
-            className="grid-2"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.4fr)",
-              gap: 56,
-              paddingTop: 22,
-              marginTop: 18,
-              borderTop: "1px solid var(--rule)",
-            }}
-          >
-            <div className="eyebrow">
-              The founding meeting · April 2026 · Birmingham, MI
-            </div>
-            <div
-              style={{
-                color: "var(--ink-2)",
-                fontSize: 15,
-                lineHeight: 1.6,
-                maxWidth: "62ch",
-              }}
-            >
-              A cross-section of practitioners — OB-GYN, endocrinology, cardiology,
-              psychiatry, integrative medicine, nutrition, pelvic-floor PT — in one
-              room, over one paper and one case. The collaborative <em>began here</em>.
-              It meets four times a year.
-            </div>
-          </figcaption>
         </figure>
       </section>
       </div>
