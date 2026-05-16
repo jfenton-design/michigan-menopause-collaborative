@@ -63,30 +63,6 @@ export function MeetingCard({
               ))}
             </div>
           </div>
-          <div>
-            <div className="eyebrow" style={{ marginBottom: 8 }}>Article of the month</div>
-            <div
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 24,
-                lineHeight: 1.2,
-                color: "var(--ink)",
-                maxWidth: "32ch",
-              }}
-            >
-              {meeting.article}
-            </div>
-            <div
-              style={{
-                fontSize: 14,
-                color: "var(--ink-soft)",
-                marginTop: 6,
-                fontStyle: "italic",
-              }}
-            >
-              {meeting.articleCitation}
-            </div>
-          </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
             <Link href={`/rsvp?meeting=${meeting.id}`} className="btn">
               RSVP →
@@ -135,16 +111,6 @@ export function MeetingCard({
         <div>
           <div className="eyebrow" style={{ marginBottom: 6, color: "var(--accent)" }}>
             {meeting.quarter}
-          </div>
-          <div
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: 22,
-              lineHeight: 1.2,
-              maxWidth: "44ch",
-            }}
-          >
-            {meeting.article}
           </div>
           <div style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 6 }}>
             {meeting.weekday} · {meeting.time} · {meeting.locationShort}
@@ -214,9 +180,9 @@ function icsHref(m: Meeting): string {
     `DTSTAMP:${fmt(new Date())}`,
     `DTSTART:${fmt(start)}`,
     `DTEND:${fmt(end)}`,
-    `SUMMARY:MMC ${m.quarter} — ${m.article}`,
+    `SUMMARY:MMC ${m.quarter} Meeting`,
     `LOCATION:${m.location.replace(/\n/g, ", ")}`,
-    `DESCRIPTION:${m.articleCitation}`,
+    `DESCRIPTION:Michigan Menopause Collaborative — ${m.quarter}`,
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n");

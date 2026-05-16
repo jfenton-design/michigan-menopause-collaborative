@@ -13,7 +13,7 @@ const VALUE_PROPS = [
   {
     n: "02",
     t: "Evidence-led",
-    d: "Every meeting orbits a recent paper and one member-submitted case. No vendors, no CEUs to chase — just a structured conversation about the state of the literature.",
+    d: "Every meeting orbits one member-submitted case. No vendors, no CEUs to chase — just a structured conversation about how to improve care for patients.",
   },
   {
     n: "03",
@@ -44,7 +44,7 @@ export default function HomePage() {
         <p className="lede" style={{ marginTop: 32, maxWidth: "56ch" }}>
           The Michigan Menopause Collaborative is a multidisciplinary peer network for
           licensed medical practitioners in southeast Michigan. Four meetings a year.
-          One paper, one case, every time. The conversations our patients deserve.
+          One case, every time. The conversations our patients deserve.
         </p>
         <div style={{ display: "flex", gap: 12, marginTop: 36, flexWrap: "wrap" }}>
           <Link href="/meetings" className="btn btn--accent">
@@ -93,7 +93,7 @@ export default function HomePage() {
         <SectionHeading
           eyebrow="The mission"
           title={<>Midlife women&apos;s care, <em>improved together</em>.</>}
-          lede="A multidisciplinary community of providers dedicated to women's health — meeting in person, four times a year, around one paper and one case."
+          lede="A multidisciplinary community of providers dedicated to women's health — meeting in person, four times a year, around one member-submitted case."
         />
         <div
           style={{
@@ -131,67 +131,6 @@ export default function HomePage() {
       {/* Next meeting hero */}
       <section className="page section" style={{ paddingTop: 56, paddingBottom: 80 }}>
         <MeetingCard meeting={NEXT_MEETING} variant="hero" />
-      </section>
-
-      {/* Article of the month */}
-      <section className="page section">
-        <SectionHeading
-          eyebrow="Article of the month"
-          title={<><em>What we&apos;ll be discussing</em> in July</>}
-          action={
-            <Link href="/resources" className="btn btn--ghost">
-              All resources →
-            </Link>
-          }
-        />
-        <div
-          className="grid-2"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)",
-            gap: 64,
-            alignItems: "start",
-          }}
-        >
-          <div>
-            <div className="pill" style={{ marginBottom: 24 }}>Summer 2026 · Reading</div>
-            <h3
-              className="display"
-              style={{
-                fontSize: "clamp(28px, 3.4vw, 48px)",
-                lineHeight: 1.05,
-                margin: 0,
-                maxWidth: "22ch",
-              }}
-            >
-              {NEXT_MEETING.article}
-            </h3>
-            <div
-              style={{
-                fontSize: 14,
-                color: "var(--ink-soft)",
-                marginTop: 16,
-                fontFamily: "var(--font-mono)",
-              }}
-            >
-              {NEXT_MEETING.articleCitation}
-            </div>
-            <p style={{ marginTop: 28, fontSize: 16, color: "var(--ink-2)", maxWidth: "52ch" }}>
-              A long-running cohort, freshly updated. We&apos;ll work through the study
-              design, the residual confounders, and what — if anything — changes in
-              our exam rooms on Monday morning.
-            </p>
-            <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
-              <Link href="/resources" className="btn">Reading list</Link>
-              <Link href={`/rsvp?meeting=${NEXT_MEETING.id}`} className="btn btn--accent">
-                RSVP for July 21 →
-              </Link>
-            </div>
-          </div>
-          <div className="placeholder-stripes" style={{ aspectRatio: "4/5", padding: 24 }}>
-            paper preview · 14 pages
-          </div>
-        </div>
       </section>
 
       {/* Membership */}

@@ -12,8 +12,6 @@ export type Meeting = {
   time: string;
   location: string;
   locationShort: string;
-  article: string;
-  articleCitation: string;
   rsvpOpen?: boolean;
 };
 
@@ -27,9 +25,6 @@ export const NEXT_MEETING: Meeting = {
   time: "6:30 — 8:00 PM",
   location: "Danialle's Clubhouse\n235 Pierce Street, Birmingham, MI",
   locationShort: "Danialle's Clubhouse · Birmingham",
-  article:
-    "Long-term cardiovascular outcomes of menopausal hormone therapy in women under 60",
-  articleCitation: "NEJM, March 2026 · 14 pp",
   rsvpOpen: true,
 };
 
@@ -45,8 +40,6 @@ export const UPCOMING_MEETINGS: Meeting[] = [
     time: "Evening",
     location: "TBD · pre-Menopause Society conference",
     locationShort: "Aligned with the Menopause Society annual conference",
-    article: "Topic in development",
-    articleCitation: "Watch this space",
     rsvpOpen: false,
   },
   {
@@ -59,9 +52,6 @@ export const UPCOMING_MEETINGS: Meeting[] = [
     time: "6:30 — 8:00 PM",
     location: "TBD",
     locationShort: "Member host · location TBD",
-    article:
-      "Cognitive symptoms in perimenopause: distinguishing transition from pathology",
-    articleCitation: "Working title · article TBD",
     rsvpOpen: false,
   },
 ];
@@ -77,9 +67,6 @@ export const PAST_MEETINGS: Meeting[] = [
     time: "6:30 — 8:00 PM",
     location: "Founding meeting · Birmingham, MI",
     locationShort: "Founding meeting · Birmingham, MI",
-    article:
-      "Establishing the collaborative — scope, cadence and shared standards of care",
-    articleCitation: "Inaugural session",
   },
 ];
 
@@ -183,25 +170,16 @@ export type Resource = {
 export const RESOURCES: Resource[] = [
   {
     quarter: "Summer 2026",
-    type: "Article of the month",
-    title:
-      "Long-term cardiovascular outcomes of menopausal hormone therapy in women under 60",
-    citation: "NEJM, March 2026 · 14 pp",
+    type: "Meeting notes",
+    title: "Summer 2026 meeting — case discussion summary",
+    citation: "July 21, 2026 · Danialle's Clubhouse, Birmingham",
     status: "current",
   },
   {
     quarter: "Spring 2026",
-    type: "Article of the month",
-    title: "Reframing the timing hypothesis: a fifteen-year follow-up",
-    citation: "JAMA Internal Medicine, January 2026 · 9 pp",
-    status: "archive",
-  },
-  {
-    quarter: "Spring 2026",
-    type: "Case study",
-    title:
-      "Refractory vasomotor symptoms in a patient with a prior thromboembolic event",
-    citation: "Presented by member · 6 pp summary",
+    type: "Meeting notes",
+    title: "Spring 2026 founding meeting — discussion summary",
+    citation: "April 8, 2026 · Birmingham, MI",
     status: "archive",
   },
 ];

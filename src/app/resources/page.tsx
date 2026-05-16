@@ -12,20 +12,16 @@ export default function ResourcesPage() {
     <>
       <PageHeader
         eyebrow="Resources"
-        title={<>The reading list, <em>the case archive</em>.</>}
-        lede="Each quarter pairs a recent paper with a member-submitted case. Materials are posted here before each meeting and archived after."
+        title={<>Documents and <em>meeting materials</em>.</>}
+        lede="Clinical references, meeting notes, and shared documents for collaborative members. Materials are posted here after each meeting."
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
-        <SectionHeading eyebrow="This quarter" title="Currently in circulation" />
+        <SectionHeading eyebrow="This quarter" title="Recently posted" />
         {current.map((r, i) => (
           <article
             key={i}
-            className="grid-2"
             style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)",
-              gap: 64,
               paddingTop: 24,
               borderTop: "1px solid var(--rule-strong)",
             }}
@@ -57,16 +53,10 @@ export default function ResourcesPage() {
                 {r.citation}
               </div>
               <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
-                <span className="btn" aria-disabled="true" style={{ opacity: 0.6, pointerEvents: "none" }}>
-                  PDF — coming soon
-                </span>
                 <span className="btn btn--ghost" aria-disabled="true" style={{ opacity: 0.6, pointerEvents: "none" }}>
-                  Discussion guide
+                  Members only
                 </span>
               </div>
-            </div>
-            <div className="placeholder-stripes" style={{ aspectRatio: "4/5" }}>
-              paper preview
             </div>
           </article>
         ))}

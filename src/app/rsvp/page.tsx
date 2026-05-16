@@ -93,25 +93,6 @@ export default async function RsvpPage({
               </div>
             </div>
 
-            <div>
-              <div className="eyebrow" style={{ marginBottom: 8 }}>
-                Article of the month
-              </div>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 18, lineHeight: 1.3 }}>
-                {selected.article}
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  color: "var(--ink-soft)",
-                  marginTop: 4,
-                  fontFamily: "var(--font-mono)",
-                }}
-              >
-                {selected.articleCitation}
-              </div>
-            </div>
-
             <div
               style={{
                 background: "var(--paper-2)",

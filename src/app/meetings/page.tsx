@@ -17,12 +17,12 @@ export default function MeetingsPage() {
         eyebrow="Quarterly meetings"
         title={
           <>
-            One paper. <em>One case.</em>
+            One case. <em>Every time.</em>
             <br />
             Four times a year.
           </>
         }
-        lede="We meet in person across the four seasons — fall, winter, spring, summer. Each meeting orbits a recent paper and a member-submitted case. Two hours. No vendors. Off the record."
+        lede="We meet in person across the four seasons — fall, winter, spring, summer. Each meeting orbits a member-submitted case. Two hours. No vendors. Off the record."
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
