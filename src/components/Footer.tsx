@@ -16,7 +16,7 @@ export function Footer() {
         <div className="footer__col">
           <h4>The Collaborative</h4>
           <ul>
-            <li><Link href="/">Mission</Link></li>
+            <li><Link href="/#mission">Mission</Link></li>
             <li><Link href="/leadership">Leadership &amp; Board</Link></li>
             <li><Link href="/members">Member directory</Link></li>
             <li><Link href="/submit-a-case">Submit a case</Link></li>
