@@ -39,13 +39,15 @@ export async function submitCase(
 
   const payload = { name, credentials, email, phone, targetMeeting, summary, question };
 
+  // Primary store — await so we can confirm it succeeded
   try {
-    await appendSubmission({ kind: "case", receivedAt: new Date().toISOString(), payload });
+    await appendCase(payload);
   } catch {
     return { status: "error", message: "We couldn't save your submission. Please email drleff@drcarrieleff.com." };
   }
 
-  void appendCase(payload);
+  // Local audit log — fire-and-forget
+  void appendSubmission({ kind: "case", receivedAt: new Date().toISOString(), payload });
 
   void sendNotification({
     subject: `Case submission — ${name}`,

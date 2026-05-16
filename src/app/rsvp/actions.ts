@@ -54,14 +54,15 @@ export async function submitRsvp(
     guestCount, guestNames, dietary, notes,
   };
 
+  // Primary store — await so we can confirm it succeeded
   try {
-    await appendSubmission({ kind: "rsvp", receivedAt: new Date().toISOString(), payload });
+    await appendRsvp(payload);
   } catch {
     return { status: "error", message: "We couldn't save your RSVP. Please email drleff@drcarrieleff.com." };
   }
 
-  // Fire-and-forget — don't block the response on these
-  void appendRsvp(payload);
+  // Local audit log — fire-and-forget, never blocks the submission
+  void appendSubmission({ kind: "rsvp", receivedAt: new Date().toISOString(), payload });
 
   void sendNotification({
     subject: `RSVP — ${name} — ${meetingLabel} (${attendingRaw || "yes"})`,
