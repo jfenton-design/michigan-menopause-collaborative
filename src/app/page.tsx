@@ -146,11 +146,6 @@ export default function HomePage() {
       </section>
       </div>
 
-      {/* Next meeting hero */}
-      <section className="page section" style={{ paddingTop: 56, paddingBottom: 80 }}>
-        <MeetingCard meeting={NEXT_MEETING} variant="hero" />
-      </section>
-
       {/* Mission */}
       <section id="mission" className="page section" style={{ paddingTop: 24 }}>
         <SectionHeading
@@ -189,6 +184,11 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Next meeting hero */}
+      <section className="page section" style={{ paddingTop: 56, paddingBottom: 80 }}>
+        <MeetingCard meeting={NEXT_MEETING} variant="hero" />
       </section>
 
       {/* Article of the month */}
