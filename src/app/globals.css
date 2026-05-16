@@ -425,6 +425,9 @@ button { font: inherit; cursor: pointer; }
   white-space: nowrap;
 }
 
+/* offset anchor links so sticky nav doesn't cover the target */
+#mission { scroll-margin-top: 80px; }
+
 /* ---------- hero reorder wrapper ---------- */
 .hero-wrap { display: flex; flex-direction: column; }
 
