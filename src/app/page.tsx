@@ -163,11 +163,8 @@ export default function HomePage() {
               <em>501(c)(3) status is in development.</em>
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
-              <Link href="/submit-a-case" className="btn btn--accent">
-                Submit a case →
-              </Link>
-              <a href={`mailto:${CONTACT_EMAIL}`} className="btn btn--ghost">
-                Inquire about joining
+              <a href={`mailto:${CONTACT_EMAIL}`} className="btn btn--accent">
+                Inquire about joining →
               </a>
             </div>
           </div>
