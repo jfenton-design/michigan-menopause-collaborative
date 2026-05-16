@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-65 -65 130 130">
+  <!-- background fill so it looks good on dark chrome -->
+  <circle r="65" fill="#F7F4FB"/>
+  <!-- 6-petal bloom mark — accent #6B3FCB -->
+  <path d="M 0 -56 C 6 -52 9 -44 8 -39 C 7 -35 4 -32 0 -32 C -4 -32 -7 -35 -8 -39 C -9 -44 -6 -52 0 -56 Z" fill="#6B3FCB" transform="rotate(0)"/>
+  <path d="M 0 -56 C 6 -52 9 -44 8 -39 C 7 -35 4 -32 0 -32 C -4 -32 -7 -35 -8 -39 C -9 -44 -6 -52 0 -56 Z" fill="#6B3FCB" transform="rotate(60)"/>
+  <path d="M 0 -56 C 6 -52 9 -44 8 -39 C 7 -35 4 -32 0 -32 C -4 -32 -7 -35 -8 -39 C -9 -44 -6 -52 0 -56 Z" fill="#6B3FCB" transform="rotate(120)"/>
+  <path d="M 0 -56 C 6 -52 9 -44 8 -39 C 7 -35 4 -32 0 -32 C -4 -32 -7 -35 -8 -39 C -9 -44 -6 -52 0 -56 Z" fill="#6B3FCB" transform="rotate(180)"/>
+  <path d="M 0 -56 C 6 -52 9 -44 8 -39 C 7 -35 4 -32 0 -32 C -4 -32 -7 -35 -8 -39 C -9 -44 -6 -52 0 -56 Z" fill="#6B3FCB" transform="rotate(240)"/>
+  <path d="M 0 -56 C 6 -52 9 -44 8 -39 C 7 -35 4 -32 0 -32 C -4 -32 -7 -35 -8 -39 C -9 -44 -6 -52 0 -56 Z" fill="#6B3FCB" transform="rotate(300)"/>
+  <!-- inner ring -->
+  <circle r="30" fill="none" stroke="#1F1535" stroke-width="1.8"/>
+  <!-- MMC monogram -->
+  <text y="6.5" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="600" font-size="19" letter-spacing="-0.5" fill="#1F1535">MMC</text>
+</svg>
