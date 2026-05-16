@@ -213,6 +213,6 @@ export const QUARTERLY_CADENCE = [
   { season: "Winter", month: "Jan",   note: "Practice-of-the-year review",  aside: "Cases that defined the year" },
 ];
 
-export const CONTACT_EMAIL = "hello@michiganmenopause.com";
+export const CONTACT_EMAIL = "drleff@drcarrieleff.com";
 export const SITE_URL = "michiganmenopause.com";
 export const SITE_ORIGIN = "https://michiganmenopause.com";
