@@ -429,7 +429,8 @@ button { font: inherit; cursor: pointer; }
 #mission { scroll-margin-top: 80px; }
 
 /* ---------- hero reorder wrapper ---------- */
-.hero-wrap { display: flex; flex-direction: column; }
+/* flex only applied at mobile so desktop block layout is unaffected */
+.hero-wrap { display: block; }
 
 /* ---------- responsive layout helpers ---------- */
 /* .grid-2  →  single column at ≤ 640px */
@@ -528,7 +529,8 @@ button { font: inherit; cursor: pointer; }
   }
 
   /* hero: photo first, text second */
-  .hero-photo { order: -1; padding-top: 16px !important; padding-bottom: 0 !important; }
+  .hero-wrap { display: flex; flex-direction: column; }
+  .hero-photo { order: -1; padding-top: 0 !important; padding-bottom: 0 !important; margin-top: 20px; }
   .hero-text  { padding-top: 24px !important; }
 
   /* hide "The room" pill — too intrusive at mobile crop */
