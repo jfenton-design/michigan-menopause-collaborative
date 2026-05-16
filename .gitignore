@@ -6,3 +6,4 @@ out/
 .DS_Store
 data/*.jsonl
 !data/.gitkeep
+.vercel

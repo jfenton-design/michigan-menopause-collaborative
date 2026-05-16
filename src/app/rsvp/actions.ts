@@ -2,7 +2,7 @@
 
 import { appendSubmission } from "@/lib/storage";
 import { appendRsvp } from "@/lib/sheets";
-import { sendNotification } from "@/lib/email";
+import { sendNotification, sendConfirmation } from "@/lib/email";
 import { UPCOMING_MEETINGS } from "@/lib/data";
 
 export type RsvpFormState =
@@ -81,6 +81,11 @@ export async function submitRsvp(
       { label: "Notes",       value: notes },
     ],
   });
+
+  // Send confirmation to attendee (with .ics) — only if they're coming
+  if (attending) {
+    void sendConfirmation({ to: email, name, meeting });
+  }
 
   return { status: "ok", meetingLabel, attending };
 }
