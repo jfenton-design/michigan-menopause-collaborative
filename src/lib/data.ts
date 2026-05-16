@@ -94,6 +94,7 @@ export type Person = {
   credentials: string;
   practice: string;
   bio: string;
+  photo?: string;
 };
 
 export const LEADERSHIP: Person[] = [
@@ -102,6 +103,7 @@ export const LEADERSHIP: Person[] = [
     name: "Dr. Carrie Leff",
     credentials: "MD · NCMP",
     practice: "Practice site",
+    photo: "/assets/dr-leff.png",
     bio:
       "Founded the collaborative in 2026 to give southeast Michigan a peer venue " +
       "for the questions that don't fit cleanly into a 20-minute visit. Practices " +
