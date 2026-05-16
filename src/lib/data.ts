@@ -101,7 +101,7 @@ export const LEADERSHIP: Person[] = [
   {
     role: "President",
     name: "Dr. Carrie Leff",
-    credentials: "MD · NCMP",
+    credentials: "DO · NCMP",
     practice: "Practice site",
     photo: "/assets/dr-leff.png",
     bio:
