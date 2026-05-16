@@ -25,8 +25,8 @@ export const NEXT_MEETING: Meeting = {
   day: "21",
   year: "2026",
   time: "6:30 — 8:00 PM",
-  location: "Danielle's Clubhouse\n235 Pierce Street, Birmingham, MI",
-  locationShort: "Danielle's Clubhouse · Birmingham",
+  location: "Danialle's Clubhouse\n235 Pierce Street, Birmingham, MI",
+  locationShort: "Danialle's Clubhouse · Birmingham",
   article:
     "Long-term cardiovascular outcomes of menopausal hormone therapy in women under 60",
   articleCitation: "NEJM, March 2026 · 14 pp",
