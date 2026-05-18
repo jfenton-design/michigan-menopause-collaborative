@@ -39,7 +39,7 @@ export default function HomePage() {
             maxWidth: "20ch",
           }}
         >
-          Join the physicians <em>elevating</em> the care of midlife women in Southeast Michigan.
+          Join the clinicians <em>elevating</em> the care of midlife women in Southeast Michigan.
         </h1>
         <p className="lede" style={{ marginTop: 32, maxWidth: "56ch" }}>
           The Michigan Menopause Collaborative is a multidisciplinary network for
