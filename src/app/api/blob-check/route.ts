@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic';
 
 // Temporary diagnostic endpoint — will be removed after debugging
 export async function GET(req: Request) {
-  const auth = req.headers.get('x-diag-key');
+  const url = new URL(req.url);
+  const auth = req.headers.get('x-diag-key') ?? url.searchParams.get('key');
   if (auth !== 'mmc-debug-2026') {
     return Response.json({ error: 'forbidden' }, { status: 403 });
   }
