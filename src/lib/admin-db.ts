@@ -2,9 +2,9 @@ import { put, head } from '@vercel/blob';
 import { RESOURCES, MEMBERS, PAST_MEETINGS, UPCOMING_MEETINGS } from './data';
 import type { Resource, Member, Meeting } from './data';
 
-// Store ID extracted from the Vercel Blob dashboard URL.
-// Not a secret — authentication is provided by BLOB_READ_WRITE_TOKEN.
-const BLOB_BASE = 'https://BFbwRnMNNW2zzg0c.public.blob.vercel-storage.com';
+// Private blob store base URL — confirmed via diagnostic endpoint.
+// Store ID is lowercase; private stores use .private. not .public.
+const BLOB_BASE = 'https://bfbwrnmnnw2zzg0c.private.blob.vercel-storage.com';
 
 function blobUrl(pathname: string): string {
   return `${BLOB_BASE}/${pathname}`;
