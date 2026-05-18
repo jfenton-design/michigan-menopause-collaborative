@@ -2,45 +2,40 @@ import { put, head } from '@vercel/blob';
 import { RESOURCES, MEMBERS, PAST_MEETINGS, UPCOMING_MEETINGS } from './data';
 import type { Resource, Member, Meeting } from './data';
 
-/** Construct a private blob URL directly from the token (avoids eventually-consistent list()). */
-function blobUrl(pathname: string): string | null {
-  const token = process.env.BLOB_READ_WRITE_TOKEN ?? '';
-  // Token format: vercel_blob_rw_{STORE_ID}_{SECRET}
-  const match = token.match(/vercel_blob_rw_([A-Za-z0-9]+)_/);
-  if (!match?.[1]) return null;
-  return `https://${match[1]}.public.blob.vercel-storage.com/${pathname}`;
+// Store ID extracted from the Vercel Blob dashboard URL.
+// Not a secret — authentication is provided by BLOB_READ_WRITE_TOKEN.
+const BLOB_BASE = 'https://BFbwRnMNNW2zzg0c.public.blob.vercel-storage.com';
+
+function blobUrl(pathname: string): string {
+  return `${BLOB_BASE}/${pathname}`;
 }
 
 async function readData<T>(pathname: string, fallback: T): Promise<T> {
+  const url = blobUrl(pathname);
   try {
-    const url = blobUrl(pathname);
-    if (url) {
-      try {
-        const info = await head(url);
-        const res = await fetch(info.downloadUrl, { cache: 'no-store' });
-        if (res.ok) return res.json() as Promise<T>;
-      } catch {
-        // head() throws if blob doesn't exist — that's fine, return fallback below
-      }
+    const info = await head(url);
+    const res = await fetch(info.downloadUrl, { cache: 'no-store' });
+    if (res.ok) return res.json() as Promise<T>;
+    console.error('[admin-db] fetch downloadUrl failed', res.status, pathname);
+  } catch (err: unknown) {
+    const status = (err as { status?: number }).status;
+    if (status === 404) {
+      // Blob doesn't exist yet — first run, use fallback
+    } else {
+      console.error('[admin-db] head() error for', url, err);
     }
-  } catch (err) {
-    console.error('[admin-db] readData failed for', pathname, err);
   }
   return fallback;
 }
 
 async function writeData(pathname: string, data: unknown): Promise<void> {
-  try {
-    await put(pathname, JSON.stringify(data), {
-      access: 'private',
-      contentType: 'application/json',
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    });
-  } catch (err) {
-    console.error('[admin-db] writeData failed for', pathname, err);
-    throw err;
-  }
+  const result = await put(pathname, JSON.stringify(data), {
+    access: 'private',
+    contentType: 'application/json',
+    addRandomSuffix: false,
+    allowOverwrite: true,
+  });
+  console.log('[admin-db] wrote', result.url);
 }
 
 export async function getResources(): Promise<Resource[]> {
