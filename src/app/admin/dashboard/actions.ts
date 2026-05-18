@@ -47,6 +47,21 @@ export async function uploadResource(formData: FormData) {
   redirect('/admin/dashboard?saved=1');
 }
 
+export async function editResource(formData: FormData) {
+  const originalTitle = formData.get('originalTitle') as string;
+  const title = formData.get('title') as string;
+  const quarter = formData.get('quarter') as string;
+  const type = formData.get('type') as string;
+  const citation = formData.get('citation') as string;
+
+  const resources = await getResources();
+  await saveResources(resources.map(r =>
+    r.title === originalTitle ? { ...r, title, quarter, type, citation } : r
+  ));
+  revalidatePath('/resources');
+  redirect('/admin/dashboard?saved=1');
+}
+
 export async function deleteResource(formData: FormData) {
   const title = formData.get('title') as string;
   const url = formData.get('url') as string | null;

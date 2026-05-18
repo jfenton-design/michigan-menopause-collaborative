@@ -5,6 +5,7 @@ import { SPECIALTIES } from '@/lib/data';
 import {
   logout,
   uploadResource,
+  editResource,
   deleteResource,
   createMeeting,
   deleteMeeting,
@@ -98,9 +99,9 @@ const s = {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; edit?: string }>;
 }) {
-  const [{ saved }, resources, meetings, members] = await Promise.all([
+  const [{ saved, edit }, resources, meetings, members] = await Promise.all([
     searchParams,
     getResources(),
     getMeetings(),
@@ -183,27 +184,55 @@ export default async function DashboardPage({
               <div style={s.divider} />
               <div>
                 {resources.map((r, i) => (
-                  <div key={i} style={s.row}>
-                    <div>
-                      <span style={{ fontWeight: 500, fontSize: 14 }}>{r.title}</span>
-                      <span
-                        style={{
-                          marginLeft: 10,
-                          fontFamily: 'var(--font-plex-mono), monospace',
-                          fontSize: 11,
-                          color: '#7a6e8a',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.06em',
-                        }}
-                      >
-                        {r.quarter} · {r.type} · {r.status}
-                      </span>
-                    </div>
-                    <form action={deleteResource}>
-                      <input type="hidden" name="title" value={r.title} />
-                      {r.url && <input type="hidden" name="url" value={r.url} />}
-                      <button type="submit" style={s.deleteBtn}>Delete</button>
-                    </form>
+                  <div key={i}>
+                    {edit === String(i) ? (
+                      <form action={editResource} style={{ padding: '16px 0', borderBottom: '1px solid #ede9f7' }}>
+                        <input type="hidden" name="originalTitle" value={r.title} />
+                        <div style={s.grid2}>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>Title</label>
+                            <input name="title" defaultValue={r.title} required style={s.input} />
+                          </div>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>Quarter</label>
+                            <input name="quarter" defaultValue={r.quarter} required style={s.input} />
+                          </div>
+                        </div>
+                        <div style={s.grid2}>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>Type</label>
+                            <select name="type" defaultValue={r.type} required style={s.input}>
+                              {RESOURCE_TYPES.map(t => <option key={t}>{t}</option>)}
+                            </select>
+                          </div>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>Citation / date line</label>
+                            <input name="citation" defaultValue={r.citation} style={s.input} />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                          <button type="submit" style={s.submitBtn}>Save changes</button>
+                          <a href="/admin/dashboard" style={{ ...s.deleteBtn, color: '#5a5168', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>Cancel</a>
+                        </div>
+                      </form>
+                    ) : (
+                      <div style={s.row}>
+                        <div>
+                          <span style={{ fontWeight: 500, fontSize: 14 }}>{r.title}</span>
+                          <span style={{ marginLeft: 10, fontFamily: 'var(--font-plex-mono), monospace', fontSize: 11, color: '#7a6e8a', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                            {r.quarter} · {r.type} · {r.status}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <a href={`/admin/dashboard?edit=${i}`} style={{ ...s.deleteBtn, color: '#5a5168', textDecoration: 'none' }}>Edit</a>
+                          <form action={deleteResource}>
+                            <input type="hidden" name="title" value={r.title} />
+                            {r.url && <input type="hidden" name="url" value={r.url} />}
+                            <button type="submit" style={s.deleteBtn}>Delete</button>
+                          </form>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
