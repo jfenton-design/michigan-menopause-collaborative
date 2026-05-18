@@ -16,11 +16,16 @@ async function readData<T>(pathname: string, fallback: T): Promise<T> {
 }
 
 async function writeData(pathname: string, data: unknown): Promise<void> {
-  await put(pathname, JSON.stringify(data), {
-    access: 'private',
-    contentType: 'application/json',
-    addRandomSuffix: false,
-  });
+  try {
+    await put(pathname, JSON.stringify(data), {
+      access: 'private',
+      contentType: 'application/json',
+      addRandomSuffix: false,
+    });
+  } catch (err) {
+    console.error('[admin-db] writeData failed for', pathname, err);
+    throw err;
+  }
 }
 
 export async function getResources(): Promise<Resource[]> {
