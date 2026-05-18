@@ -122,6 +122,7 @@ export const FOUNDING_MEMBERS: FoundingMember[] = [
   { name: "Dr. Leanne Roberts",  url: "https://www.henryford.com/physician-directory/r/roberts-leanne" },
   { name: "Dr. Karen Berris",    url: "https://www.endocrinemds.com/karen-berris-m-d/" },
   { name: "Dr. Sindhu Koshy",    url: "https://www.cardiovascularconsultantspc.com/medical-team/sindhu-koshy-m-d-f-c-c/" },
+  { name: "Dr. Lisa Chism",      url: "https://www.oaklandmacombobgyn.com/provider/lisa-chism-dnp-aprn-bc-csc-ncmp-faanp" },
 ];
 
 export type Member = {
