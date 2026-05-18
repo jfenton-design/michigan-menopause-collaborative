@@ -14,7 +14,10 @@ async function readData<T>(pathname: string, fallback: T): Promise<T> {
   const url = blobUrl(pathname);
   try {
     const info = await head(url);
-    const res = await fetch(info.downloadUrl, { cache: 'no-store' });
+    const res = await fetch(info.downloadUrl, {
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN ?? ''}` },
+    });
     if (res.ok) return res.json() as Promise<T>;
     console.error('[admin-db] fetch downloadUrl failed', res.status, pathname);
   } catch (err: unknown) {
