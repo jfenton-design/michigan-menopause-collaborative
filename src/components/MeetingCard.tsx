@@ -95,9 +95,9 @@ export function MeetingCard({
             <Image
               src="/assets/danialle-karmanos.png"
               alt="Danialle Karmanos"
-              width={64}
-              height={64}
-              style={{ borderRadius: "50%", objectFit: "cover", objectPosition: "center 15%", flexShrink: 0 }}
+              width={80}
+              height={80}
+              style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
             />
             <p style={{ margin: 0, fontSize: 13, color: "var(--ink-2)", lineHeight: 1.5 }}>
               Thanks to{" "}
