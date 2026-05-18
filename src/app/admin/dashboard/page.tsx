@@ -95,8 +95,13 @@ const s = {
   divider: { borderTop: '1px solid #ede9f7', marginTop: 28, marginBottom: 28 },
 };
 
-export default async function DashboardPage() {
-  const [resources, meetings, members] = await Promise.all([
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ saved?: string }>;
+}) {
+  const [{ saved }, resources, meetings, members] = await Promise.all([
+    searchParams,
     getResources(),
     getMeetings(),
     getMembers(),
@@ -131,10 +136,11 @@ export default async function DashboardPage() {
         </form>
       </div>
 
-      {/* DEBUG BANNER — remove after confirmed working */}
-      <div style={{ background: '#fff3cd', padding: '8px 40px', fontSize: 12, fontFamily: 'monospace', borderBottom: '1px solid #ffc107' }}>
-        Rendered: {new Date().toISOString()} · Resources: {resources.length} · Meetings: {meetings.length} · Members: {members.length}
-      </div>
+      {saved === '1' && (
+        <div style={{ background: '#EAF4EA', borderBottom: '1px solid #b7ddb7', padding: '12px 40px', fontSize: 14, color: '#2d6a2d' }}>
+          ✓ Saved — changes may take about a minute to appear on michiganmenopause.com.
+        </div>
+      )}
 
       <div style={s.content}>
 

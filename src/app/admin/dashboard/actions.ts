@@ -44,7 +44,7 @@ export async function uploadResource(formData: FormData) {
   await saveResources([newResource, ...updated]);
   revalidatePath('/resources');
   revalidatePath('/admin/dashboard');
-  redirect('/admin/dashboard');
+  redirect('/admin/dashboard?saved=1');
 }
 
 export async function deleteResource(formData: FormData) {
@@ -56,7 +56,7 @@ export async function deleteResource(formData: FormData) {
   const resources = await getResources();
   await saveResources(resources.filter(r => r.title !== title));
   revalidatePath('/resources');
-  redirect('/admin/dashboard');
+  redirect('/admin/dashboard?saved=1');
 }
 
 // MEETINGS
@@ -77,7 +77,7 @@ export async function createMeeting(formData: FormData) {
   const meetings = await getMeetings();
   await saveMeetings([meeting, ...meetings]);
   revalidatePath('/meetings');
-  redirect('/admin/dashboard');
+  redirect('/admin/dashboard?saved=1');
 }
 
 export async function deleteMeeting(formData: FormData) {
@@ -85,7 +85,7 @@ export async function deleteMeeting(formData: FormData) {
   const meetings = await getMeetings();
   await saveMeetings(meetings.filter(m => m.id !== id));
   revalidatePath('/meetings');
-  redirect('/admin/dashboard');
+  redirect('/admin/dashboard?saved=1');
 }
 
 // MEMBERS
@@ -100,7 +100,7 @@ export async function addMember(formData: FormData) {
   const members = await getMembers();
   await saveMembers([...members, member]);
   revalidatePath('/members');
-  redirect('/admin/dashboard');
+  redirect('/admin/dashboard?saved=1');
 }
 
 export async function deleteMember(formData: FormData) {
@@ -108,5 +108,5 @@ export async function deleteMember(formData: FormData) {
   const members = await getMembers();
   await saveMembers(members.filter(m => m.name !== name));
   revalidatePath('/members');
-  redirect('/admin/dashboard');
+  redirect('/admin/dashboard?saved=1');
 }
