@@ -21,6 +21,7 @@ async function writeData(pathname: string, data: unknown): Promise<void> {
       access: 'private',
       contentType: 'application/json',
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
   } catch (err) {
     console.error('[admin-db] writeData failed for', pathname, err);
