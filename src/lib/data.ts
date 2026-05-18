@@ -82,6 +82,7 @@ export type Person = {
   practice: string;
   bio: string;
   photo?: string;
+  link?: { label: string; url: string };
 };
 
 export const LEADERSHIP: Person[] = [
@@ -91,6 +92,7 @@ export const LEADERSHIP: Person[] = [
     credentials: "DO · MSCP",
     practice: "Practice site",
     photo: "/assets/dr-leff.png",
+    link: { label: "DrCarrieLeff.com", url: "https://drcarrieleff.com" },
     bio:
       "Founded the collaborative in 2026 to give southeast Michigan a peer venue " +
       "for the questions that don't fit cleanly into a 20-minute visit. Practices " +
@@ -102,6 +104,7 @@ export const LEADERSHIP: Person[] = [
     credentials: "MD",
     practice: "Practice site",
     photo: "/assets/dr-heeringa.png",
+    link: { label: "Oakland Macomb OB/GYN", url: "https://www.oaklandmacombobgyn.com/provider/amy-heeringa-m-d" },
     bio:
       "Partners with the President on programming, helps shape each meeting's " +
       "topic and case selection, and stands in for the chair when needed.",
@@ -114,10 +117,10 @@ export type FoundingMember = {
 };
 
 export const FOUNDING_MEMBERS: FoundingMember[] = [
-  { name: "Mary Cornelius",  url: "https://www.dmc.org/provider/1730190679" },
-  { name: "Leanne Roberts",  url: "https://www.henryford.com/physician-directory/r/roberts-leanne" },
-  { name: "Karen Berris",    url: "https://www.endocrinemds.com/karen-berris-m-d/" },
-  { name: "Sindhu Koshy",    url: "https://www.cardiovascularconsultantspc.com/medical-team/sindhu-koshy-m-d-f-c-c/" },
+  { name: "Dr. Mary Cornelius",  url: "https://www.dmc.org/provider/1730190679" },
+  { name: "Dr. Leanne Roberts",  url: "https://www.henryford.com/physician-directory/r/roberts-leanne" },
+  { name: "Dr. Karen Berris",    url: "https://www.endocrinemds.com/karen-berris-m-d/" },
+  { name: "Dr. Sindhu Koshy",    url: "https://www.cardiovascularconsultantspc.com/medical-team/sindhu-koshy-m-d-f-c-c/" },
 ];
 
 export type Member = {

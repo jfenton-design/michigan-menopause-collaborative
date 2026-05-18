@@ -12,7 +12,7 @@ const VALUE_PROPS = [
   },
   {
     n: "02",
-    t: "Evidence-Led",
+    t: "Evidence-led",
     d: "Each meeting includes a focused topic, discussion of a selected article, and 1–2 member-submitted cases. A place to ask questions, exchange ideas, and continue building expertise in midlife medicine together.",
   },
   {

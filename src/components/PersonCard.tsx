@@ -31,6 +31,16 @@ export function PersonCard({ p }: { p: Person }) {
         <div style={{ fontSize: 14, color: "var(--ink-soft)", marginTop: 8, fontFamily: "var(--font-mono)" }}>
           {p.credentials}
         </div>
+        {p.link && (
+          <a
+            href={p.link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "inline-block", marginTop: 10, fontSize: 14, color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}
+          >
+            {p.link.label} ↗
+          </a>
+        )}
         {p.bio && (
           <p style={{ marginTop: 22, fontSize: 17, lineHeight: 1.55, color: "var(--ink-2)", maxWidth: "52ch" }}>
             {p.bio}
