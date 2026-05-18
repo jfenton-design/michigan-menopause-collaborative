@@ -478,7 +478,11 @@ button { font: inherit; cursor: pointer; }
   .person-card__portrait { min-height: 260px; aspect-ratio: 3/2; }
   .person-card__name { font-size: clamp(28px, 5vw, 40px); }
 
-  /* SectionHeading: stop forcing 2-col */
+  /* SectionHeading: collapse to single column */
+  .section-heading {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
 }
 
 @media (max-width: 640px) {

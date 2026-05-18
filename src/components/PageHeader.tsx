@@ -35,6 +35,7 @@ type SectionHeadingProps = {
 export function SectionHeading({ eyebrow, title, lede, action }: SectionHeadingProps) {
   return (
     <div
+      className="section-heading"
       style={{
         display: "grid",
         gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)",
