@@ -1,18 +1,32 @@
-import { put, list } from '@vercel/blob';
+import { put, head } from '@vercel/blob';
 import { RESOURCES, MEMBERS, PAST_MEETINGS, UPCOMING_MEETINGS } from './data';
 import type { Resource, Member, Meeting } from './data';
 
+/** Construct a private blob URL directly from the token (avoids eventually-consistent list()). */
+function blobUrl(pathname: string): string | null {
+  const token = process.env.BLOB_READ_WRITE_TOKEN ?? '';
+  // Token format: vercel_blob_rw_{STORE_ID}_{SECRET}
+  const match = token.match(/vercel_blob_rw_([A-Za-z0-9]+)_/);
+  if (!match?.[1]) return null;
+  return `https://${match[1]}.public.blob.vercel-storage.com/${pathname}`;
+}
+
 async function readData<T>(pathname: string, fallback: T): Promise<T> {
   try {
-    const { blobs } = await list({ prefix: pathname });
-    const exact = blobs.find(b => b.pathname === pathname);
-    if (!exact) return fallback;
-    const res = await fetch(exact.downloadUrl, { cache: 'no-store' });
-    if (!res.ok) return fallback;
-    return res.json() as Promise<T>;
-  } catch {
-    return fallback;
+    const url = blobUrl(pathname);
+    if (url) {
+      try {
+        const info = await head(url);
+        const res = await fetch(info.downloadUrl, { cache: 'no-store' });
+        if (res.ok) return res.json() as Promise<T>;
+      } catch {
+        // head() throws if blob doesn't exist — that's fine, return fallback below
+      }
+    }
+  } catch (err) {
+    console.error('[admin-db] readData failed for', pathname, err);
   }
+  return fallback;
 }
 
 async function writeData(pathname: string, data: unknown): Promise<void> {
