@@ -88,7 +88,7 @@ export const LEADERSHIP: Person[] = [
   {
     role: "President",
     name: "Dr. Carrie Leff",
-    credentials: "DO · NCMP",
+    credentials: "DO · MSCP",
     practice: "Practice site",
     photo: "/assets/dr-leff.png",
     bio:
@@ -98,22 +98,26 @@ export const LEADERSHIP: Person[] = [
   },
   {
     role: "Vice President",
-    name: "Name TBD",
-    credentials: "MD · TBD",
+    name: "Dr. Amy Heeringa",
+    credentials: "MD",
     practice: "Practice site",
+    photo: "/assets/dr-heeringa.png",
     bio:
-      "The Vice President partners with the President on programming, helps shape " +
-      "each meeting's article selection, and stands in for the chair when needed.",
+      "Partners with the President on programming, helps shape each meeting's " +
+      "topic and case selection, and stands in for the chair when needed.",
   },
-  {
-    role: "Secretary",
-    name: "Name TBD",
-    credentials: "MD · TBD",
-    practice: "Practice site",
-    bio:
-      "The Secretary keeps the member roll, records each meeting's discussion, " +
-      "and stewards the resources archive between quarterly gatherings.",
-  },
+];
+
+export type FoundingMember = {
+  name: string;
+  url: string;
+};
+
+export const FOUNDING_MEMBERS: FoundingMember[] = [
+  { name: "Mary Cornelius",  url: "https://www.dmc.org/provider/1730190679" },
+  { name: "Leanne Roberts",  url: "https://www.henryford.com/physician-directory/r/roberts-leanne" },
+  { name: "Karen Berris",    url: "https://www.endocrinemds.com/karen-berris-m-d/" },
+  { name: "Sindhu Koshy",    url: "https://www.cardiovascularconsultantspc.com/medical-team/sindhu-koshy-m-d-f-c-c/" },
 ];
 
 export type Member = {
@@ -125,20 +129,20 @@ export type Member = {
 };
 
 export const MEMBERS: Member[] = [
-  { name: "Dr. A. Whitfield",   credentials: "MD · NCMP",   specialty: "Obstetrics & Gynecology",  location: "Birmingham",       practice: "whitfieldwomen.com" },
+  { name: "Dr. A. Whitfield",   credentials: "MD · MSCP",   specialty: "Obstetrics & Gynecology",  location: "Birmingham",       practice: "whitfieldwomen.com" },
   { name: "Dr. R. Nair",        credentials: "MD · FACE",   specialty: "Endocrinology",            location: "Royal Oak",        practice: "nair-endo.com" },
   { name: "Dr. M. Castellanos", credentials: "MD · MPH",    specialty: "Family Medicine",          location: "Ann Arbor",        practice: "castellanosmd.com" },
-  { name: "Dr. E. Park",        credentials: "MD · NCMP",   specialty: "Internal Medicine",        location: "Bloomfield Hills", practice: "park-internal.com" },
+  { name: "Dr. E. Park",        credentials: "MD · MSCP",   specialty: "Internal Medicine",        location: "Bloomfield Hills", practice: "park-internal.com" },
   { name: "Dr. L. Brennan",     credentials: "DO · IFMCP",  specialty: "Integrative Medicine",     location: "Northville",       practice: "brennan-integrative.com" },
   { name: "Dr. K. Ojo",         credentials: "MD · FACS",   specialty: "Breast Surgery",           location: "Detroit",          practice: "ojobreastcare.com" },
   { name: "Dr. S. Hartwell",    credentials: "MD",          specialty: "Psychiatry",               location: "Grosse Pointe",    practice: "hartwellpsych.com" },
-  { name: "Dr. J. Mahmoud",     credentials: "MD · NCMP",   specialty: "Urogynecology",            location: "Troy",             practice: "mahmoudwomenshealth.com" },
+  { name: "Dr. J. Mahmoud",     credentials: "MD · MSCP",   specialty: "Urogynecology",            location: "Troy",             practice: "mahmoudwomenshealth.com" },
   { name: "Dr. P. Iverson",     credentials: "DPT · WHC",   specialty: "Pelvic-floor PT",          location: "Ferndale",         practice: "iversonpelvic.com" },
   { name: "Dr. T. Greco",       credentials: "MD · FACC",   specialty: "Preventive Cardiology",    location: "Royal Oak",        practice: "grecocardio.com" },
   { name: "Dr. N. Kowalski",    credentials: "MD · FAAD",   specialty: "Dermatology",              location: "Birmingham",       practice: "kowalskidermatology.com" },
   { name: "Dr. R. Albright",    credentials: "MD",          specialty: "Sleep Medicine",           location: "Beverly Hills",    practice: "albrightsleep.com" },
   { name: "Dr. D. Marwick",     credentials: "RDN · CDCES", specialty: "Nutrition & Metabolism",   location: "Bloomfield",       practice: "marwicknutrition.com" },
-  { name: "Dr. C. Achebe",      credentials: "MD · NCMP",   specialty: "Gynecologic Oncology",     location: "Detroit",          practice: "achebegynonc.com" },
+  { name: "Dr. C. Achebe",      credentials: "MD · MSCP",   specialty: "Gynecologic Oncology",     location: "Detroit",          practice: "achebegynonc.com" },
 ];
 
 export const SPECIALTIES = [

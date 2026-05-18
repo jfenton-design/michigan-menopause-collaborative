@@ -7,3 +7,4 @@ out/
 data/*.jsonl
 !data/.gitkeep
 .vercel
+.env*.local

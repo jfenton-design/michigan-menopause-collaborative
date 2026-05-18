@@ -8,17 +8,17 @@ const VALUE_PROPS = [
   {
     n: "01",
     t: "Peer-to-peer",
-    d: "Practitioners across OB-GYN, endocrinology, cardiology, psychiatry, integrative medicine, nutrition, and pelvic-floor PT — in one room, comparing notes on what's actually working.",
+    d: "Clinicians across all disciplines in medicine. One room. Shared experience. Practical discussion about what is working in real patient care.",
   },
   {
     n: "02",
-    t: "Evidence-led",
-    d: "Every meeting orbits one member-submitted case. No vendors, no CEUs to chase — just a structured conversation about how to improve care for patients.",
+    t: "Evidence-Led",
+    d: "Each meeting includes a focused topic, discussion of a selected article, and 1–2 member-submitted cases. A place to ask questions, exchange ideas, and continue building expertise in midlife medicine together.",
   },
   {
     n: "03",
     t: "Local",
-    d: "We meet in southeast Michigan, in person. Our patients are neighbors. So is our standard of care.",
+    d: "We meet in southeast Michigan, in person. Our patients are our neighbors. Our standard of care should reflect that.",
   },
 ];
 
@@ -39,12 +39,16 @@ export default function HomePage() {
             maxWidth: "20ch",
           }}
         >
-          Join the physicians <em>elevating</em> the care of midlife women.
+          Join the physicians <em>elevating</em> the care of midlife women in Southeast Michigan.
         </h1>
         <p className="lede" style={{ marginTop: 32, maxWidth: "56ch" }}>
-          The Michigan Menopause Collaborative is a multidisciplinary peer network for
-          licensed medical practitioners in southeast Michigan. Four meetings a year.
-          One case, every time. The conversations our patients deserve.
+          The Michigan Menopause Collaborative is a multidisciplinary network for
+          clinicians caring for women in midlife. Four meetings a year. One focused
+          topic. One article. A real case discussion. A collaborative space to learn,
+          connect, and strengthen the care of our patients.
+        </p>
+        <p className="lede" style={{ marginTop: 16, maxWidth: "56ch", fontStyle: "italic" }}>
+          Midlife women&apos;s care, improved together.
         </p>
         <div style={{ display: "flex", gap: 12, marginTop: 36, flexWrap: "wrap" }}>
           <Link href="/meetings" className="btn btn--accent">
@@ -93,7 +97,7 @@ export default function HomePage() {
         <SectionHeading
           eyebrow="The mission"
           title={<>Midlife women&apos;s care, <em>improved together</em>.</>}
-          lede="A multidisciplinary community of providers dedicated to women's health — meeting in person, four times a year, around one member-submitted case."
+          lede="A multidisciplinary community of clinicians dedicated to improving care for women in midlife. Meeting in person four times a year for focused discussion, networking, and collaborative case-based learning."
         />
         <div
           style={{

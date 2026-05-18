@@ -78,7 +78,7 @@ export function CaseForm() {
         </div>
         <div className="field">
           <label htmlFor="case-credentials">Credentials</label>
-          <input id="case-credentials" name="credentials" placeholder="MD · NCMP" />
+          <input id="case-credentials" name="credentials" placeholder="MD · MSCP" />
         </div>
       </div>
 

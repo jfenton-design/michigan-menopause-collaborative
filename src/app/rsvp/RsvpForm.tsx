@@ -84,7 +84,7 @@ export function RsvpForm({ defaultMeeting }: { defaultMeeting: string }) {
         </div>
         <div className="field">
           <label htmlFor="rsvp-credentials">Credentials</label>
-          <input id="rsvp-credentials" name="credentials" placeholder="MD · NCMP" />
+          <input id="rsvp-credentials" name="credentials" placeholder="MD · MSCP" />
         </div>
       </div>
 

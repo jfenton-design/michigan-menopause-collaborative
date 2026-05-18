@@ -26,11 +26,11 @@ export const metadata: Metadata = {
     template: "%s · Michigan Menopause Collaborative",
   },
   description:
-    "A peer society of licensed medical practitioners in southeast Michigan caring for midlife women. Four meetings a year. One paper, one case, every time.",
+    "A multidisciplinary network for clinicians caring for women in midlife in southeast Michigan. Four meetings a year. One focused topic. One article. A real case discussion.",
   openGraph: {
     title: "Michigan Menopause Collaborative",
     description:
-      "A peer society of licensed medical practitioners in southeast Michigan caring for midlife women.",
+      "A multidisciplinary network for clinicians caring for women in midlife in southeast Michigan.",
     type: "website",
     url: SITE_ORIGIN,
     siteName: "Michigan Menopause Collaborative",

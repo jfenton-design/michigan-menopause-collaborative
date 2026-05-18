@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Meeting } from "@/lib/data";
 
 type Variant = "hero" | "compact" | "default";
@@ -77,6 +78,32 @@ export function MeetingCard({
             <Link href="/submit-a-case" className="btn btn--ghost">
               Submit a case
             </Link>
+          </div>
+
+          {/* Venue host thank-you */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              marginTop: 8,
+              padding: "14px 16px",
+              background: "var(--paper-2)",
+              borderRadius: "var(--radius-md)",
+            }}
+          >
+            <Image
+              src="/assets/danialle-karmanos.png"
+              alt="Danialle Karmanos"
+              width={48}
+              height={48}
+              style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+            />
+            <p style={{ margin: 0, fontSize: 13, color: "var(--ink-2)", lineHeight: 1.5 }}>
+              Thanks to{" "}
+              <strong style={{ color: "var(--ink)" }}>Danialle Karmanos</strong>{" "}
+              for donating the use of her space for our gathering!
+            </p>
           </div>
         </div>
       </article>
