@@ -23,12 +23,15 @@ export async function GET(req: Request) {
     });
     results.step1_putUrl = r.url;
 
-    // 2. head() → get downloadUrl → fetch content
+    // 2. head() → get downloadUrl → fetch content (with auth header)
     try {
       const h = await head(r.url);
       results.step2_headDownloadUrl = h.downloadUrl?.slice(0, 100) + '…';
 
-      const fetchRes = await fetch(h.downloadUrl, { cache: 'no-store' });
+      const fetchRes = await fetch(h.downloadUrl, {
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN ?? ''}` },
+      });
       results.step2_fetchStatus = fetchRes.status;
       if (fetchRes.ok) {
         const body = await fetchRes.json();
@@ -48,7 +51,10 @@ export async function GET(req: Request) {
   const resourcesUrl = 'https://bfbwrnmnnw2zzg0c.private.blob.vercel-storage.com/mmc/resources.json';
   try {
     const h = await head(resourcesUrl);
-    const fetchRes = await fetch(h.downloadUrl, { cache: 'no-store' });
+    const fetchRes = await fetch(h.downloadUrl, {
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN ?? ''}` },
+    });
     results.step3_resourcesFetchStatus = fetchRes.status;
     if (fetchRes.ok) {
       const body = await fetchRes.json();
