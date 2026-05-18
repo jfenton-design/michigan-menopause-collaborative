@@ -29,11 +29,11 @@ export async function uploadResource(formData: FormData) {
   }
 
   const resources = await getResources();
-  // Set previous "current" resources to "archive"
   const updated = resources.map(r => r.status === 'current' ? { ...r, status: 'archive' as const } : r);
   const newResource: Resource = { quarter, type, title, citation, status: 'current', url };
   await saveResources([newResource, ...updated]);
   revalidatePath('/resources');
+  redirect('/admin/dashboard');
 }
 
 export async function deleteResource(formData: FormData) {
@@ -45,6 +45,7 @@ export async function deleteResource(formData: FormData) {
   const resources = await getResources();
   await saveResources(resources.filter(r => r.title !== title));
   revalidatePath('/resources');
+  redirect('/admin/dashboard');
 }
 
 // MEETINGS
@@ -65,6 +66,7 @@ export async function createMeeting(formData: FormData) {
   const meetings = await getMeetings();
   await saveMeetings([meeting, ...meetings]);
   revalidatePath('/meetings');
+  redirect('/admin/dashboard');
 }
 
 export async function deleteMeeting(formData: FormData) {
@@ -72,6 +74,7 @@ export async function deleteMeeting(formData: FormData) {
   const meetings = await getMeetings();
   await saveMeetings(meetings.filter(m => m.id !== id));
   revalidatePath('/meetings');
+  redirect('/admin/dashboard');
 }
 
 // MEMBERS
@@ -86,6 +89,7 @@ export async function addMember(formData: FormData) {
   const members = await getMembers();
   await saveMembers([...members, member]);
   revalidatePath('/members');
+  redirect('/admin/dashboard');
 }
 
 export async function deleteMember(formData: FormData) {
@@ -93,4 +97,5 @@ export async function deleteMember(formData: FormData) {
   const members = await getMembers();
   await saveMembers(members.filter(m => m.name !== name));
   revalidatePath('/members');
+  redirect('/admin/dashboard');
 }
