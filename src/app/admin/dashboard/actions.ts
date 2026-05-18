@@ -53,10 +53,11 @@ export async function editResource(formData: FormData) {
   const quarter = formData.get('quarter') as string;
   const type = formData.get('type') as string;
   const citation = formData.get('citation') as string;
+  const status = formData.get('status') as 'current' | 'archive';
 
   const resources = await getResources();
   await saveResources(resources.map(r =>
-    r.title === originalTitle ? { ...r, title, quarter, type, citation } : r
+    r.title === originalTitle ? { ...r, title, quarter, type, citation, status } : r
   ));
   revalidatePath('/resources');
   redirect('/admin/dashboard?saved=1');

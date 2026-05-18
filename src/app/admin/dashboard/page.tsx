@@ -210,6 +210,13 @@ export default async function DashboardPage({
                             <input name="citation" defaultValue={r.citation} style={s.input} />
                           </div>
                         </div>
+                        <div style={{ ...s.fieldGroup, maxWidth: 200 }}>
+                          <label style={s.label}>Section</label>
+                          <select name="status" defaultValue={r.status} style={s.input}>
+                            <option value="current">This quarter (current)</option>
+                            <option value="archive">Archive (past materials)</option>
+                          </select>
+                        </div>
                         <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                           <button type="submit" style={s.submitBtn}>Save changes</button>
                           <a href="/admin/dashboard" style={{ ...s.deleteBtn, color: '#5a5168', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>Cancel</a>
