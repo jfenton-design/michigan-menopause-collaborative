@@ -39,7 +39,7 @@ export function SectionHeading({ eyebrow, title, lede, action }: SectionHeadingP
         display: "grid",
         gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)",
         gap: 56,
-        alignItems: "end",
+        alignItems: "start",
         marginBottom: 40,
         borderTop: "1px solid var(--rule-strong)",
         paddingTop: 24,

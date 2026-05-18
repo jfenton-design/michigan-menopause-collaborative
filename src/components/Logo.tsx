@@ -18,8 +18,8 @@ type LogoProps = {
  * Direction B from the design system.
  */
 export function Logo({ size = "md", inverse = false }: LogoProps) {
-  const dim = { sm: 32, md: 44, lg: 92 }[size];
-  const fs = { sm: 13, md: 15, lg: 28 }[size];
+  const dim = { sm: 32, md: 68, lg: 92 }[size];
+  const fs = { sm: 13, md: 16, lg: 28 }[size];
   const ink = inverse ? "var(--paper)" : "var(--ink)";
   const accent = "var(--accent)";
 
