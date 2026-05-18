@@ -131,6 +131,11 @@ export default async function DashboardPage() {
         </form>
       </div>
 
+      {/* DEBUG BANNER — remove after confirmed working */}
+      <div style={{ background: '#fff3cd', padding: '8px 40px', fontSize: 12, fontFamily: 'monospace', borderBottom: '1px solid #ffc107' }}>
+        Rendered: {new Date().toISOString()} · Resources: {resources.length} · Meetings: {meetings.length} · Members: {members.length}
+      </div>
+
       <div style={s.content}>
 
         {/* ── RESOURCES ── */}

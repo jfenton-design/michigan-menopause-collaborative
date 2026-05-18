@@ -33,6 +33,7 @@ export async function uploadResource(formData: FormData) {
   const newResource: Resource = { quarter, type, title, citation, status: 'current', url };
   await saveResources([newResource, ...updated]);
   revalidatePath('/resources');
+  revalidatePath('/admin/dashboard');
   redirect('/admin/dashboard');
 }
 
