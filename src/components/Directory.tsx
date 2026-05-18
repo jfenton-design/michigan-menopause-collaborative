@@ -3,14 +3,16 @@
 import { useMemo, useState } from "react";
 import { MemberRow } from "./MemberRow";
 import { MEMBERS, SPECIALTIES } from "@/lib/data";
+import type { Member } from "@/lib/data";
 
-export function Directory() {
+export function Directory({ members: membersProp }: { members?: Member[] }) {
+  const members = membersProp ?? MEMBERS;
   const [q, setQ] = useState("");
   const [spec, setSpec] = useState("All specialties");
 
   const filtered = useMemo(() => {
     const lq = q.trim().toLowerCase();
-    return MEMBERS.filter((m) => {
+    return members.filter((m) => {
       const matchQ =
         lq === "" ||
         m.name.toLowerCase().includes(lq) ||
@@ -19,7 +21,7 @@ export function Directory() {
       const matchS = spec === "All specialties" || m.specialty === spec;
       return matchQ && matchS;
     });
-  }, [q, spec]);
+  }, [q, spec, members]);
 
   return (
     <>
@@ -42,7 +44,7 @@ export function Directory() {
           </select>
         </div>
         <div className="dir-count">
-          {filtered.length} of {MEMBERS.length} members
+          {filtered.length} of {members.length} members
         </div>
       </div>
 

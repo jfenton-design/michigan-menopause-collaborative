@@ -13,6 +13,7 @@ export type Meeting = {
   location: string;
   locationShort: string;
   rsvpOpen?: boolean;
+  showKarmanos?: boolean;
 };
 
 export const NEXT_MEETING: Meeting = {
@@ -172,6 +173,7 @@ export type Resource = {
   title: string;
   citation: string;
   status: "current" | "archive";
+  url?: string;
 };
 
 export const RESOURCES: Resource[] = [

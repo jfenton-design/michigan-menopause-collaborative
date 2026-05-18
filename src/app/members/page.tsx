@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { Directory } from "@/components/Directory";
+import { getMembers } from "@/lib/admin-db";
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Members" };
 
-export default function MembersPage() {
+export default async function MembersPage() {
+  const members = await getMembers();
+
   return (
     <>
       <PageHeader
@@ -14,7 +18,7 @@ export default function MembersPage() {
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
-        <Directory />
+        <Directory members={members} />
 
         <div
           style={{

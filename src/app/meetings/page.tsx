@@ -1,16 +1,41 @@
 import type { Metadata } from "next";
 import { MeetingCard } from "@/components/MeetingCard";
 import { PageHeader, SectionHeading } from "@/components/PageHeader";
-import {
-  NEXT_MEETING,
-  PAST_MEETINGS,
-  QUARTERLY_CADENCE,
-  UPCOMING_MEETINGS,
-} from "@/lib/data";
+import { QUARTERLY_CADENCE } from "@/lib/data";
+import { getMeetings } from "@/lib/admin-db";
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Meetings" };
 
-export default function MeetingsPage() {
+export default async function MeetingsPage() {
+  const allMeetings = await getMeetings();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const upcoming = allMeetings
+    .filter((m) => {
+      const d = new Date(`${m.month} ${m.day}, ${m.year}`);
+      return !isNaN(d.getTime()) && d >= today;
+    })
+    .sort(
+      (a, b) =>
+        new Date(`${a.month} ${a.day}, ${a.year}`).getTime() -
+        new Date(`${b.month} ${b.day}, ${b.year}`).getTime()
+    );
+
+  const past = allMeetings
+    .filter((m) => {
+      const d = new Date(`${m.month} ${m.day}, ${m.year}`);
+      return !isNaN(d.getTime()) && d < today;
+    })
+    .sort(
+      (a, b) =>
+        new Date(`${b.month} ${b.day}, ${b.year}`).getTime() -
+        new Date(`${a.month} ${a.day}, ${a.year}`).getTime()
+    );
+
+  const nextMeeting = upcoming[0] ?? past[0];
+
   return (
     <>
       <PageHeader
@@ -27,9 +52,9 @@ export default function MeetingsPage() {
 
       <section className="page section" style={{ paddingTop: 24 }}>
         <SectionHeading eyebrow="Upcoming" title="On the calendar" />
-        <MeetingCard meeting={NEXT_MEETING} variant="hero" />
+        {nextMeeting && <MeetingCard meeting={nextMeeting} variant="hero" />}
         <div style={{ marginTop: 80 }}>
-          {UPCOMING_MEETINGS.slice(1).map((m) => (
+          {upcoming.slice(1).map((m) => (
             <MeetingCard key={m.id} meeting={m} variant="compact" />
           ))}
         </div>
@@ -80,7 +105,7 @@ export default function MeetingsPage() {
           eyebrow="Past meetings"
           title="The collaborative, looking back"
         />
-        {PAST_MEETINGS.map((m) => (
+        {past.map((m) => (
           <MeetingCard key={m.id} meeting={m} variant="compact" />
         ))}
         <div style={{ marginTop: 24, fontSize: 13, color: "var(--ink-soft)" }}>

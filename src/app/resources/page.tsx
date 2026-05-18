@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { PageHeader, SectionHeading } from "@/components/PageHeader";
-import { RESOURCES } from "@/lib/data";
+import { getResources } from "@/lib/admin-db";
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Resources" };
 
-export default function ResourcesPage() {
-  const current = RESOURCES.filter((r) => r.status === "current");
-  const archive = RESOURCES.filter((r) => r.status === "archive");
+export default async function ResourcesPage() {
+  const allResources = await getResources();
+  const current = allResources.filter((r) => r.status === "current");
+  const archive = allResources.filter((r) => r.status === "archive");
 
   return (
     <>
@@ -53,9 +55,15 @@ export default function ResourcesPage() {
                 {r.citation}
               </div>
               <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
-                <span className="btn btn--ghost" aria-disabled="true" style={{ opacity: 0.6, pointerEvents: "none" }}>
-                  Members only
-                </span>
+                {r.url ? (
+                  <a href={r.url} className="btn btn--ghost" target="_blank" rel="noopener noreferrer">
+                    Download PDF
+                  </a>
+                ) : (
+                  <span className="btn btn--ghost" aria-disabled="true" style={{ opacity: 0.6, pointerEvents: "none" }}>
+                    Members only
+                  </span>
+                )}
               </div>
             </div>
           </article>
@@ -107,13 +115,19 @@ export default function ResourcesPage() {
                   {r.citation}
                 </div>
               </div>
-              <span
-                className="btn btn--ghost"
-                aria-disabled="true"
-                style={{ opacity: 0.55, pointerEvents: "none" }}
-              >
-                Members only
-              </span>
+              {r.url ? (
+                <a href={r.url} className="btn btn--ghost" target="_blank" rel="noopener noreferrer">
+                  Download PDF
+                </a>
+              ) : (
+                <span
+                  className="btn btn--ghost"
+                  aria-disabled="true"
+                  style={{ opacity: 0.55, pointerEvents: "none" }}
+                >
+                  Members only
+                </span>
+              )}
             </article>
           ))}
         </div>

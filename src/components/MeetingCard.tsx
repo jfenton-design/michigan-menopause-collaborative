@@ -81,30 +81,32 @@ export function MeetingCard({
           </div>
 
           {/* Venue host thank-you */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              marginTop: 8,
-              padding: "14px 16px",
-              background: "var(--paper-2)",
-              borderRadius: "var(--radius-md)",
-            }}
-          >
-            <Image
-              src="/assets/danialle-karmanos.png"
-              alt="Danialle Karmanos"
-              width={96}
-              height={96}
-              style={{ borderRadius: "50%", objectFit: "cover", objectPosition: "center 5%", flexShrink: 0 }}
-            />
-            <p style={{ margin: 0, fontSize: 13, color: "var(--ink-2)", lineHeight: 1.5 }}>
-              Thanks to{" "}
-              <strong style={{ color: "var(--ink)" }}>Danialle Karmanos</strong>{" "}
-              for donating the use of her space for our gathering!
-            </p>
-          </div>
+          {meeting.showKarmanos !== false && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                marginTop: 8,
+                padding: "14px 16px",
+                background: "var(--paper-2)",
+                borderRadius: "var(--radius-md)",
+              }}
+            >
+              <Image
+                src="/assets/danialle-karmanos.png"
+                alt="Danialle Karmanos"
+                width={96}
+                height={96}
+                style={{ borderRadius: "50%", objectFit: "cover", objectPosition: "center 5%", flexShrink: 0 }}
+              />
+              <p style={{ margin: 0, fontSize: 13, color: "var(--ink-2)", lineHeight: 1.5 }}>
+                Thanks to{" "}
+                <strong style={{ color: "var(--ink)" }}>Danialle Karmanos</strong>{" "}
+                for donating the use of her space for our gathering!
+              </p>
+            </div>
+          )}
         </div>
       </article>
     );
