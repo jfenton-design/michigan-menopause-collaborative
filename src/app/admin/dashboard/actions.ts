@@ -23,9 +23,19 @@ export async function uploadResource(formData: FormData) {
 
   let url: string | undefined;
   if (file && file.size > 0) {
-    const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    const blob = await put(`mmc/pdfs/${slug}.pdf`, file, { access: 'private', allowOverwrite: true });
-    url = blob.url;
+    try {
+      const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const blob = await put(`mmc/pdfs/${slug}.pdf`, file, {
+        access: 'private',
+        contentType: 'application/pdf',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      });
+      url = blob.url;
+      console.log('[uploadResource] PDF uploaded:', url);
+    } catch (err) {
+      console.error('[uploadResource] PDF upload failed — saving resource without PDF:', err);
+    }
   }
 
   const resources = await getResources();
