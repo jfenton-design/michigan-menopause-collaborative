@@ -24,7 +24,7 @@ export async function uploadResource(formData: FormData) {
   let url: string | undefined;
   if (file && file.size > 0) {
     const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    const blob = await put(`mmc/pdfs/${slug}.pdf`, file, { access: 'public' });
+    const blob = await put(`mmc/pdfs/${slug}.pdf`, file, { access: 'private' });
     url = blob.url;
   }
 

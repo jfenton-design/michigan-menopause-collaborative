@@ -7,7 +7,7 @@ async function readData<T>(pathname: string, fallback: T): Promise<T> {
     const { blobs } = await list({ prefix: pathname });
     const exact = blobs.find(b => b.pathname === pathname);
     if (!exact) return fallback;
-    const res = await fetch(exact.url, { cache: 'no-store' });
+    const res = await fetch(exact.downloadUrl, { cache: 'no-store' });
     if (!res.ok) return fallback;
     return res.json() as Promise<T>;
   } catch {
@@ -17,7 +17,7 @@ async function readData<T>(pathname: string, fallback: T): Promise<T> {
 
 async function writeData(pathname: string, data: unknown): Promise<void> {
   await put(pathname, JSON.stringify(data), {
-    access: 'public',
+    access: 'private',
     contentType: 'application/json',
     addRandomSuffix: false,
   });
