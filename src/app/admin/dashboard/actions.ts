@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getMeetings, saveMeetings, getResources, saveResources, getMembers, saveMembers, getContent, saveContent } from '@/lib/admin-db';
 import type { Meeting, Resource, Member, SiteContent } from '@/lib/data';
+import { DEFAULT_CONTENT } from '@/lib/data';
 
 // LOGOUT
 export async function logout() {
@@ -130,8 +131,10 @@ export async function deleteMember(formData: FormData) {
 // SITE CONTENT
 export async function editContent(formData: FormData) {
   const current = await getContent();
-  const updated: SiteContent = { ...current };
-  for (const key of Object.keys(current) as Array<keyof SiteContent>) {
+  // Spread DEFAULT_CONTENT first so newly added fields are always present,
+  // then overlay with whatever was previously saved, then overlay with form data.
+  const updated: SiteContent = { ...DEFAULT_CONTENT, ...current };
+  for (const key of Object.keys(DEFAULT_CONTENT) as Array<keyof SiteContent>) {
     const val = formData.get(key);
     if (typeof val === 'string') updated[key] = val;
   }
