@@ -7,9 +7,11 @@ type Variant = "hero" | "compact" | "default";
 export function MeetingCard({
   meeting,
   variant = "default",
+  isPast = false,
 }: {
   meeting: Meeting;
   variant?: Variant;
+  isPast?: boolean;
 }) {
   if (variant === "hero") {
     return (
@@ -148,13 +150,13 @@ export function MeetingCard({
             {meeting.weekday} · {meeting.time} · {meeting.locationShort}
           </div>
         </div>
-        {meeting.rsvpOpen ? (
+        {!isPast && (meeting.rsvpOpen ? (
           <Link href={`/rsvp?meeting=${meeting.id}`} className="btn btn--ghost" style={{ alignSelf: "center" }}>
             RSVP →
           </Link>
         ) : (
           <span className="eyebrow" style={{ alignSelf: "center" }}>RSVP soon</span>
-        )}
+        ))}
       </article>
     );
   }

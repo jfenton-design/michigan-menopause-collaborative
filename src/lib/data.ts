@@ -215,6 +215,15 @@ export type SiteContent = {
   // Meetings
   meetings_header_lede: string;
   meetings_past_note: string;
+  // Cadence
+  cadence_spring_note: string;
+  cadence_spring_aside: string;
+  cadence_summer_note: string;
+  cadence_summer_aside: string;
+  cadence_fall_note: string;
+  cadence_fall_aside: string;
+  cadence_winter_note: string;
+  cadence_winter_aside: string;
   // Resources
   resources_header_lede: string;
   // Members
@@ -240,6 +249,14 @@ export const DEFAULT_CONTENT: SiteContent = {
   home_membership_text: 'Open to licensed medical practitioners caring for midlife women in southeast Michigan. No fees while we operate informally; 501(c)(3) status is in development.',
   meetings_header_lede: 'We meet in person across the four seasons — fall, winter, spring, summer. Each meeting orbits a member-submitted case. Two hours. No vendors. Off the record.',
   meetings_past_note: 'Members may request notes from past meetings via the Resources page.',
+  cadence_spring_note: 'Founding-anniversary meeting',
+  cadence_spring_aside: 'Annual programming reset',
+  cadence_summer_note: 'Pre-conference primer',
+  cadence_summer_aside: 'Reading list for the Society conference',
+  cadence_fall_note: 'Pre-Menopause Society',
+  cadence_fall_aside: 'Aligned with the annual conference',
+  cadence_winter_note: 'Practice-of-the-year review',
+  cadence_winter_aside: 'Cases that defined the year',
   resources_header_lede: 'Clinical references, meeting notes, and shared documents for collaborative members. Materials are posted here after each meeting.',
   members_header_lede: 'A multidisciplinary list of members who have opted to be publicly visible. Inclusion is not a referral or endorsement — it is a statement that this physician shares our standard of care.',
   members_optin_note: 'Membership in the collaborative is open to licensed medical practitioners. Inclusion in this public directory is at each member\'s discretion — some members participate without listing publicly.',

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { MeetingCard } from "@/components/MeetingCard";
 import { PageHeader, SectionHeading } from "@/components/PageHeader";
-import { QUARTERLY_CADENCE } from "@/lib/data";
 import { getMeetings, getContent } from "@/lib/admin-db";
 
 export const dynamic = 'force-dynamic';
@@ -73,7 +72,12 @@ export default async function MeetingsPage() {
             gap: 24,
           }}
         >
-          {QUARTERLY_CADENCE.map((q) => (
+          {[
+            { season: "Spring", month: "April", note: content.cadence_spring_note, aside: content.cadence_spring_aside },
+            { season: "Summer", month: "July",  note: content.cadence_summer_note, aside: content.cadence_summer_aside },
+            { season: "Fall",   month: "Sept",  note: content.cadence_fall_note,   aside: content.cadence_fall_aside },
+            { season: "Winter", month: "Jan",   note: content.cadence_winter_note, aside: content.cadence_winter_aside },
+          ].map((q) => (
             <div
               key={q.season}
               style={{ borderTop: "1px solid var(--rule-strong)", paddingTop: 20 }}
@@ -106,7 +110,7 @@ export default async function MeetingsPage() {
           title="The collaborative, looking back"
         />
         {past.map((m) => (
-          <MeetingCard key={m.id} meeting={m} variant="compact" />
+          <MeetingCard key={m.id} meeting={m} variant="compact" isPast />
         ))}
         <div style={{ marginTop: 24, fontSize: 13, color: "var(--ink-soft)" }}>
           {content.meetings_past_note}

@@ -462,6 +462,26 @@ export default async function DashboardPage({
               <input name="meetings_past_note" defaultValue={content.meetings_past_note} style={s.input} />
             </div>
 
+            <p style={{ fontSize: 12, fontFamily: 'var(--font-plex-mono), monospace', color: '#7a6e8a', margin: '0 0 14px', letterSpacing: '0.04em' }}>THE CADENCE — each season has a headline and a sub-note</p>
+            {([
+              { season: 'Spring', noteKey: 'cadence_spring_note', asideKey: 'cadence_spring_aside' },
+              { season: 'Summer', noteKey: 'cadence_summer_note', asideKey: 'cadence_summer_aside' },
+              { season: 'Fall',   noteKey: 'cadence_fall_note',   asideKey: 'cadence_fall_aside' },
+              { season: 'Winter', noteKey: 'cadence_winter_note', asideKey: 'cadence_winter_aside' },
+            ] as const).map(({ season, noteKey, asideKey }) => (
+              <div key={season} style={{ ...s.grid2, marginBottom: 12 }}>
+                <div style={s.fieldGroup}>
+                  <label style={s.label}>{season} — headline</label>
+                  <input name={noteKey} defaultValue={content[noteKey]} style={s.input} />
+                </div>
+                <div style={{ ...s.fieldGroup, marginBottom: 0 }}>
+                  <label style={s.label}>{season} — sub-note</label>
+                  <input name={asideKey} defaultValue={content[asideKey]} style={s.input} />
+                </div>
+              </div>
+            ))}
+            <div style={{ marginBottom: 28 }} />
+
             <div style={s.divider} />
 
             {/* Resources */}
