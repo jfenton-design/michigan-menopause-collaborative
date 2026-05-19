@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonCard } from "@/components/PersonCard";
-import { CONTACT_EMAIL, FOUNDING_MEMBERS, LEADERSHIP } from "@/lib/data";
+import { FOUNDING_MEMBERS, LEADERSHIP } from "@/lib/data";
 import { getContent } from "@/lib/admin-db";
 
 export const dynamic = 'force-dynamic';
@@ -64,10 +64,11 @@ export default async function LeadershipPage() {
           <div className="eyebrow">A note on governance</div>
           <p style={{ margin: 0, color: "var(--ink-2)", maxWidth: "54ch" }}>
             {content.leadership_governance}{" "}
-            <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: "var(--accent)" }}>
-              Reach out to Dr. Leff
-            </a>
-            .
+            {content.leadership_cta_label && content.leadership_cta_url && (
+              <><a href={content.leadership_cta_url} style={{ color: "var(--accent)" }}>
+                {content.leadership_cta_label}
+              </a>.</>
+            )}
           </p>
         </div>
       </section>

@@ -492,9 +492,19 @@ export default async function DashboardPage({
               <label style={s.label}>Header lede</label>
               <textarea name="leadership_header_lede" defaultValue={content.leadership_header_lede} rows={3} style={{ ...s.input, resize: 'vertical' }} />
             </div>
-            <div style={{ ...s.fieldGroup, marginBottom: 28 }}>
+            <div style={s.fieldGroup}>
               <label style={s.label}>Governance note</label>
               <textarea name="leadership_governance" defaultValue={content.leadership_governance} rows={3} style={{ ...s.input, resize: 'vertical' }} />
+            </div>
+            <div style={s.grid2}>
+              <div style={s.fieldGroup}>
+                <label style={s.label}>CTA link text</label>
+                <input name="leadership_cta_label" defaultValue={content.leadership_cta_label} style={s.input} placeholder="Reach out to Dr. Leff" />
+              </div>
+              <div style={{ ...s.fieldGroup, marginBottom: 28 }}>
+                <label style={s.label}>CTA link URL</label>
+                <input name="leadership_cta_url" defaultValue={content.leadership_cta_url} style={s.input} placeholder="mailto:drleff@drcarrieleff.com" />
+              </div>
             </div>
 
             <div style={s.divider} />

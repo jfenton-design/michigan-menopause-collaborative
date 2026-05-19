@@ -223,6 +223,8 @@ export type SiteContent = {
   // Leadership
   leadership_header_lede: string;
   leadership_governance: string;
+  leadership_cta_label: string;
+  leadership_cta_url: string;
   // Submit a Case
   submit_header_lede: string;
   submit_what_to_include: string;
@@ -243,6 +245,8 @@ export const DEFAULT_CONTENT: SiteContent = {
   members_optin_note: 'Membership in the collaborative is open to licensed medical practitioners. Inclusion in this public directory is at each member\'s discretion — some members participate without listing publicly.',
   leadership_header_lede: 'An informal board oversees programming, member admissions, and the planned transition to 501(c)(3) status. Additional officers join as the collaborative grows.',
   leadership_governance: 'The collaborative operates informally in 2026. As we transition to 501(c)(3) status, the board will expand to include a treasurer and two at-large director seats elected by the membership. Interested in standing?',
+  leadership_cta_label: 'Reach out to Dr. Leff',
+  leadership_cta_url: `mailto:${CONTACT_EMAIL}`,
   submit_header_lede: 'Submit a de-identified case for consideration at an upcoming meeting. Selected cases are presented by the submitter — typically 10 minutes, followed by group discussion.',
   submit_what_to_include: 'The clinical question that keeps the case interesting\nA high-level history — no PHI, no chart screenshots\nWhat has and hasn\'t worked so far\nWhere the literature has felt thin or contradictory',
   submit_what_happens_next: 'Dr. Leff and the board review submissions quarterly.\nSelected submitters present their case in person — 10 minutes.\nThe room discusses for 30 minutes; a written summary is archived.',
