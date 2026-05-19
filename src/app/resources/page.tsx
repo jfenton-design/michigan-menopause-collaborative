@@ -116,7 +116,7 @@ export default async function ResourcesPage() {
                 </div>
               </div>
               {r.url ? (
-                <a href={r.url} className="btn btn--ghost" target="_blank" rel="noopener noreferrer">
+                <a href={`/api/pdf?url=${encodeURIComponent(r.url!)}`} className="btn btn--ghost" target="_blank" rel="noopener noreferrer">
                   Download PDF
                 </a>
               ) : (
