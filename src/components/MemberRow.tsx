@@ -1,6 +1,17 @@
 import type { Member } from "@/lib/data";
 
+function practiceDisplay(practice: string): { href: string; label: string } {
+  const href = practice.startsWith("http") ? practice : `https://${practice}`;
+  try {
+    const label = new URL(href).hostname.replace(/^www\./, "");
+    return { href, label };
+  } catch {
+    return { href, label: practice };
+  }
+}
+
 export function MemberRow({ m }: { m: Member }) {
+  const { href, label } = practiceDisplay(m.practice);
   return (
     <div className="dir-row">
       <div className="dir-row__name">
@@ -14,12 +25,12 @@ export function MemberRow({ m }: { m: Member }) {
       <div className="dir-row__specialty">{m.specialty}</div>
       <div className="dir-row__location">{m.location}</div>
       <a
-        href={`https://${m.practice}`}
+        href={href}
         target="_blank"
         rel="noopener noreferrer"
         className="dir-row__link"
       >
-        {m.practice} →
+        {label} →
       </a>
     </div>
   );
