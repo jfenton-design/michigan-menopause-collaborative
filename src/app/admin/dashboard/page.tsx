@@ -139,6 +139,32 @@ export default async function DashboardPage({
         </form>
       </div>
 
+      {/* Nav strip */}
+      <div style={{ background: '#2a1c47', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 40px', display: 'flex', gap: 4 }}>
+        {[
+          { label: 'Resources', href: '#resources' },
+          { label: 'Meetings',  href: '#meetings' },
+          { label: 'Members',   href: '#members' },
+          { label: 'Content',   href: '#content' },
+        ].map(({ label, href }) => (
+          <a
+            key={href}
+            href={href}
+            style={{
+              color: 'rgba(255,255,255,0.65)',
+              fontSize: 13,
+              fontWeight: 500,
+              textDecoration: 'none',
+              padding: '10px 14px',
+              display: 'inline-block',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {label}
+          </a>
+        ))}
+      </div>
+
       {saved === '1' && (
         <div style={{ background: '#EAF4EA', borderBottom: '1px solid #b7ddb7', padding: '12px 40px', fontSize: 14, color: '#2d6a2d' }}>
           ✓ Saved — changes may take about a minute to appear on michiganmenopause.com.
@@ -148,7 +174,7 @@ export default async function DashboardPage({
       <div style={s.content}>
 
         {/* ── RESOURCES ── */}
-        <div style={s.card}>
+        <div id="resources" style={s.card}>
           <h2 style={s.sectionTitle}>Resources</h2>
 
           <form action={uploadResource} encType="multipart/form-data">
@@ -250,7 +276,7 @@ export default async function DashboardPage({
         </div>
 
         {/* ── MEETINGS ── */}
-        <div style={s.card}>
+        <div id="meetings" style={s.card}>
           <h2 style={s.sectionTitle}>Meetings</h2>
 
           <form action={createMeeting}>
@@ -339,7 +365,7 @@ export default async function DashboardPage({
         </div>
 
         {/* ── MEMBERS ── */}
-        <div style={s.card}>
+        <div id="members" style={s.card}>
           <h2 style={s.sectionTitle}>Members</h2>
 
           <form action={addMember}>
@@ -396,7 +422,7 @@ export default async function DashboardPage({
         </div>
 
         {/* ── SITE CONTENT ── */}
-        <div style={s.card}>
+        <div id="content" style={s.card}>
           <h2 style={s.sectionTitle}>Site Content</h2>
           <form action={editContent}>
 
