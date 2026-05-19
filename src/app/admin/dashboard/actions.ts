@@ -3,8 +3,8 @@ import { put, del } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getMeetings, saveMeetings, getResources, saveResources, getMembers, saveMembers } from '@/lib/admin-db';
-import type { Meeting, Resource, Member } from '@/lib/data';
+import { getMeetings, saveMeetings, getResources, saveResources, getMembers, saveMembers, getContent, saveContent } from '@/lib/admin-db';
+import type { Meeting, Resource, Member, SiteContent } from '@/lib/data';
 
 // LOGOUT
 export async function logout() {
@@ -124,5 +124,23 @@ export async function deleteMember(formData: FormData) {
   const members = await getMembers();
   await saveMembers(members.filter(m => m.name !== name));
   revalidatePath('/members');
+  redirect('/admin/dashboard?saved=1');
+}
+
+// SITE CONTENT
+export async function editContent(formData: FormData) {
+  const current = await getContent();
+  const updated: SiteContent = { ...current };
+  for (const key of Object.keys(current) as Array<keyof SiteContent>) {
+    const val = formData.get(key);
+    if (typeof val === 'string') updated[key] = val;
+  }
+  await saveContent(updated);
+  revalidatePath('/');
+  revalidatePath('/meetings');
+  revalidatePath('/resources');
+  revalidatePath('/members');
+  revalidatePath('/leadership');
+  revalidatePath('/submit-a-case');
   redirect('/admin/dashboard?saved=1');
 }

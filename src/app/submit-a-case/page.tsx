@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { CaseForm } from "./CaseForm";
+import { getContent } from "@/lib/admin-db";
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Submit a case" };
 
-export default function SubmitPage() {
+export default async function SubmitPage() {
+  const content = await getContent();
   return (
     <>
       <PageHeader
         eyebrow="Submit a case"
         title={<>The hardest case <em>in your week</em>.</>}
-        lede="Submit a de-identified case for consideration at an upcoming meeting. Selected cases are presented by the submitter — typically 10 minutes, followed by group discussion."
+        lede={content.submit_header_lede}
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
@@ -44,10 +47,9 @@ export default function SubmitPage() {
                   gap: 8,
                 }}
               >
-                <li>The clinical question that keeps the case interesting</li>
-                <li>A high-level history — no PHI, no chart screenshots</li>
-                <li>What has and hasn&apos;t worked so far</li>
-                <li>Where the literature has felt thin or contradictory</li>
+                {content.submit_what_to_include.split('\n').map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ul>
             </div>
             <div>
@@ -61,9 +63,9 @@ export default function SubmitPage() {
                   gap: 8,
                 }}
               >
-                <li>Dr. Leff and the board review submissions quarterly.</li>
-                <li>Selected submitters present their case in person — 10 minutes.</li>
-                <li>The room discusses for 30 minutes; a written summary is archived.</li>
+                {content.submit_what_happens_next.split('\n').map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
               </ol>
             </div>
             <div
@@ -76,9 +78,7 @@ export default function SubmitPage() {
               }}
             >
               <strong style={{ color: "var(--ink)" }}>Membership reminder.</strong>{" "}
-              Case submission is open to all licensed medical practitioners — you do not
-              need to be a current member to submit, but presenters are typically
-              members or invited guests.
+              {content.submit_membership_reminder}
             </div>
           </aside>
         </div>

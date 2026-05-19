@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import { MeetingCard } from "@/components/MeetingCard";
 import { PageHeader, SectionHeading } from "@/components/PageHeader";
 import { QUARTERLY_CADENCE } from "@/lib/data";
-import { getMeetings } from "@/lib/admin-db";
+import { getMeetings, getContent } from "@/lib/admin-db";
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Meetings" };
 
 export default async function MeetingsPage() {
-  const allMeetings = await getMeetings();
+  const [allMeetings, content] = await Promise.all([getMeetings(), getContent()]);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -47,7 +47,7 @@ export default async function MeetingsPage() {
             Four times a year.
           </>
         }
-        lede="We meet in person across the four seasons — fall, winter, spring, summer. Each meeting orbits a member-submitted case. Two hours. No vendors. Off the record."
+        lede={content.meetings_header_lede}
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
@@ -109,7 +109,7 @@ export default async function MeetingsPage() {
           <MeetingCard key={m.id} meeting={m} variant="compact" />
         ))}
         <div style={{ marginTop: 24, fontSize: 13, color: "var(--ink-soft)" }}>
-          Members may request notes from past meetings via the Resources page.
+          {content.meetings_past_note}
         </div>
       </section>
     </>

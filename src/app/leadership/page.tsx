@@ -2,16 +2,19 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonCard } from "@/components/PersonCard";
 import { CONTACT_EMAIL, FOUNDING_MEMBERS, LEADERSHIP } from "@/lib/data";
+import { getContent } from "@/lib/admin-db";
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Leadership" };
 
-export default function LeadershipPage() {
+export default async function LeadershipPage() {
+  const content = await getContent();
   return (
     <>
       <PageHeader
         eyebrow="Leadership & board"
         title={<>The people <em>holding the room</em>.</>}
-        lede="An informal board oversees programming, member admissions, and the planned transition to 501(c)(3) status. Additional officers join as the collaborative grows."
+        lede={content.leadership_header_lede}
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
@@ -60,9 +63,7 @@ export default function LeadershipPage() {
         >
           <div className="eyebrow">A note on governance</div>
           <p style={{ margin: 0, color: "var(--ink-2)", maxWidth: "54ch" }}>
-            The collaborative operates informally in 2026. As we transition to
-            501(c)(3) status, the board will expand to include a treasurer and two
-            at-large director seats elected by the membership. Interested in standing?{" "}
+            {content.leadership_governance}{" "}
             <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: "var(--accent)" }}>
               Reach out to Dr. Leff
             </a>

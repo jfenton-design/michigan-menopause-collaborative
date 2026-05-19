@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { PageHeader, SectionHeading } from "@/components/PageHeader";
-import { getResources } from "@/lib/admin-db";
+import { getResources, getContent } from "@/lib/admin-db";
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Resources" };
 
 export default async function ResourcesPage() {
-  const allResources = await getResources();
+  const [allResources, content] = await Promise.all([getResources(), getContent()]);
   const current = allResources.filter((r) => r.status === "current");
   const archive = allResources.filter((r) => r.status === "archive");
 
@@ -15,7 +15,7 @@ export default async function ResourcesPage() {
       <PageHeader
         eyebrow="Resources"
         title={<>Documents and <em>meeting materials</em>.</>}
-        lede="Clinical references, meeting notes, and shared documents for collaborative members. Materials are posted here after each meeting."
+        lede={content.resources_header_lede}
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>

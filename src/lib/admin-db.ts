@@ -1,6 +1,6 @@
 import { put, head } from '@vercel/blob';
-import { RESOURCES, MEMBERS, PAST_MEETINGS, UPCOMING_MEETINGS } from './data';
-import type { Resource, Member, Meeting } from './data';
+import { RESOURCES, MEMBERS, PAST_MEETINGS, UPCOMING_MEETINGS, DEFAULT_CONTENT } from './data';
+import type { Resource, Member, Meeting, SiteContent } from './data';
 
 // Private blob store base URL — confirmed via diagnostic endpoint.
 // Store ID is lowercase; private stores use .private. not .public.
@@ -64,4 +64,12 @@ export async function getMembers(): Promise<Member[]> {
 
 export async function saveMembers(members: Member[]): Promise<void> {
   await writeData('mmc/members.json', members);
+}
+
+export async function getContent(): Promise<SiteContent> {
+  return readData<SiteContent>('mmc/content.json', DEFAULT_CONTENT);
+}
+
+export async function saveContent(content: SiteContent): Promise<void> {
+  await writeData('mmc/content.json', content);
 }

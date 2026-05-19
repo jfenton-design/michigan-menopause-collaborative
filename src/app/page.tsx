@@ -3,6 +3,9 @@ import Link from "next/link";
 import { MeetingCard } from "@/components/MeetingCard";
 import { SectionHeading } from "@/components/PageHeader";
 import { CONTACT_EMAIL, NEXT_MEETING } from "@/lib/data";
+import { getContent } from "@/lib/admin-db";
+
+export const dynamic = 'force-dynamic';
 
 const VALUE_PROPS = [
   {
@@ -22,14 +25,15 @@ const VALUE_PROPS = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await getContent();
   return (
     <>
       <div className="hero-wrap">
       {/* Hero */}
       <section className="page section hero-text" style={{ paddingTop: 48, paddingBottom: 40 }}>
         <div className="eyebrow" style={{ marginBottom: 22 }}>
-          Est. 2026 · Southeast Michigan · A peer society
+          {content.home_hero_eyebrow}
         </div>
         <h1
           className="display"
@@ -42,13 +46,10 @@ export default function HomePage() {
           Join the clinicians <em>elevating</em> the care of midlife women in Southeast Michigan.
         </h1>
         <p className="lede" style={{ marginTop: 32, maxWidth: "56ch" }}>
-          The Michigan Menopause Collaborative is a multidisciplinary network for
-          clinicians caring for women in midlife. Four meetings a year. One focused
-          topic. One article. A real case discussion. A collaborative space to learn,
-          connect, and strengthen the care of our patients.
+          {content.home_hero_lede}
         </p>
         <p className="lede" style={{ marginTop: 16, maxWidth: "56ch", fontStyle: "italic" }}>
-          Midlife women&apos;s care, improved together.
+          {content.home_hero_tagline}
         </p>
         <div style={{ display: "flex", gap: 12, marginTop: 36, flexWrap: "wrap" }}>
           <Link href="/meetings" className="btn btn--accent">
@@ -97,7 +98,7 @@ export default function HomePage() {
         <SectionHeading
           eyebrow="The mission"
           title={<>Midlife women&apos;s care, <em>improved together</em>.</>}
-          lede="A multidisciplinary community of clinicians dedicated to improving care for women in midlife. Meeting in person four times a year for focused discussion, networking, and collaborative case-based learning."
+          lede={content.home_mission_lede}
         />
         <div
           style={{
@@ -162,9 +163,7 @@ export default function HomePage() {
                 maxWidth: "32ch",
               }}
             >
-              Open to licensed medical practitioners caring for midlife women in
-              southeast Michigan. No fees while we operate informally;{" "}
-              <em>501(c)(3) status is in development.</em>
+              {content.home_membership_text}
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
               <a href={`mailto:${CONTACT_EMAIL}`} className="btn btn--accent">

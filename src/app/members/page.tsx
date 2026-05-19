@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { Directory } from "@/components/Directory";
-import { getMembers } from "@/lib/admin-db";
+import { getMembers, getContent } from "@/lib/admin-db";
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Members" };
 
 export default async function MembersPage() {
-  const members = await getMembers();
+  const [members, content] = await Promise.all([getMembers(), getContent()]);
 
   return (
     <>
       <PageHeader
         eyebrow="Member directory"
         title={<>Practitioners <em>across the practice</em>.</>}
-        lede="A multidisciplinary list of members who have opted to be publicly visible. Inclusion is not a referral or endorsement — it is a statement that this physician shares our standard of care."
+        lede={content.members_header_lede}
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
@@ -30,9 +30,7 @@ export default async function MembersPage() {
         >
           <div className="eyebrow">Opt-in note</div>
           <p style={{ margin: 0, color: "var(--ink-2)", maxWidth: "54ch" }}>
-            Membership in the collaborative is open to licensed medical practitioners.
-            Inclusion in this public directory is at each member&apos;s discretion — some
-            members participate without listing publicly.
+            {content.members_optin_note}
           </p>
         </div>
       </section>

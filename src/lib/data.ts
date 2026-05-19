@@ -204,3 +204,47 @@ export const QUARTERLY_CADENCE = [
 export const CONTACT_EMAIL = "drleff@drcarrieleff.com";
 export const SITE_URL = "michiganmenopause.com";
 export const SITE_ORIGIN = "https://michiganmenopause.com";
+
+export type SiteContent = {
+  // Home
+  home_hero_eyebrow: string;
+  home_hero_lede: string;
+  home_hero_tagline: string;
+  home_mission_lede: string;
+  home_membership_text: string;
+  // Meetings
+  meetings_header_lede: string;
+  meetings_past_note: string;
+  // Resources
+  resources_header_lede: string;
+  // Members
+  members_header_lede: string;
+  members_optin_note: string;
+  // Leadership
+  leadership_header_lede: string;
+  leadership_governance: string;
+  // Submit a Case
+  submit_header_lede: string;
+  submit_what_to_include: string;
+  submit_what_happens_next: string;
+  submit_membership_reminder: string;
+};
+
+export const DEFAULT_CONTENT: SiteContent = {
+  home_hero_eyebrow: 'Est. 2026 · Southeast Michigan · A peer society',
+  home_hero_lede: 'The Michigan Menopause Collaborative is a multidisciplinary network for clinicians caring for women in midlife. Four meetings a year. One focused topic. One article. A real case discussion. A collaborative space to learn, connect, and strengthen the care of our patients.',
+  home_hero_tagline: 'Midlife women\'s care, improved together.',
+  home_mission_lede: 'A multidisciplinary community of clinicians dedicated to improving care for women in midlife. Meeting in person four times a year for focused discussion, networking, and collaborative case-based learning.',
+  home_membership_text: 'Open to licensed medical practitioners caring for midlife women in southeast Michigan. No fees while we operate informally; 501(c)(3) status is in development.',
+  meetings_header_lede: 'We meet in person across the four seasons — fall, winter, spring, summer. Each meeting orbits a member-submitted case. Two hours. No vendors. Off the record.',
+  meetings_past_note: 'Members may request notes from past meetings via the Resources page.',
+  resources_header_lede: 'Clinical references, meeting notes, and shared documents for collaborative members. Materials are posted here after each meeting.',
+  members_header_lede: 'A multidisciplinary list of members who have opted to be publicly visible. Inclusion is not a referral or endorsement — it is a statement that this physician shares our standard of care.',
+  members_optin_note: 'Membership in the collaborative is open to licensed medical practitioners. Inclusion in this public directory is at each member\'s discretion — some members participate without listing publicly.',
+  leadership_header_lede: 'An informal board oversees programming, member admissions, and the planned transition to 501(c)(3) status. Additional officers join as the collaborative grows.',
+  leadership_governance: 'The collaborative operates informally in 2026. As we transition to 501(c)(3) status, the board will expand to include a treasurer and two at-large director seats elected by the membership. Interested in standing?',
+  submit_header_lede: 'Submit a de-identified case for consideration at an upcoming meeting. Selected cases are presented by the submitter — typically 10 minutes, followed by group discussion.',
+  submit_what_to_include: 'The clinical question that keeps the case interesting\nA high-level history — no PHI, no chart screenshots\nWhat has and hasn\'t worked so far\nWhere the literature has felt thin or contradictory',
+  submit_what_happens_next: 'Dr. Leff and the board review submissions quarterly.\nSelected submitters present their case in person — 10 minutes.\nThe room discusses for 30 minutes; a written summary is archived.',
+  submit_membership_reminder: 'Case submission is open to all licensed medical practitioners — you do not need to be a current member to submit, but presenters are typically members or invited guests.',
+};
