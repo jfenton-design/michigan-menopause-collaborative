@@ -366,6 +366,10 @@ export default async function DashboardPage({
                             <input name="topicPresenter" defaultValue={m.topicPresenter ?? ''} style={s.input} placeholder="Dr. Eva Alsheik" />
                           </div>
                         </div>
+                        <div style={s.fieldGroup}>
+                          <label style={s.label}>Speaker website URL <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(links their name on the site)</span></label>
+                          <input name="speakerUrl" defaultValue={m.speakerUrl ?? ''} style={s.input} placeholder="https://drevaalsheikomd.com" />
+                        </div>
 
                         {/* Speaker photo */}
                         <div style={s.fieldGroup}>

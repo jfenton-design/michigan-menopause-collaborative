@@ -17,6 +17,7 @@ export type Meeting = {
   // Topic & article
   topic?: string;
   topicPresenter?: string;
+  speakerUrl?: string;
   speakerPhoto?: string;
   articleTitle?: string;
   articleUrl?: string;

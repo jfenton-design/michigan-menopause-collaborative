@@ -67,7 +67,13 @@ export function MeetingCard({
               <div>
                 <div style={{ fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>{meeting.topic}</div>
                 {meeting.topicPresenter && (
-                  <div style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 4 }}>{meeting.topicPresenter}</div>
+                  <div style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 4 }}>
+                    {meeting.speakerUrl ? (
+                      <a href={meeting.speakerUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none" }}>
+                        {meeting.topicPresenter}
+                      </a>
+                    ) : meeting.topicPresenter}
+                  </div>
                 )}
               </div>
             </div>
@@ -181,7 +187,11 @@ export function MeetingCard({
                 <span>
                   <span style={{ fontWeight: 500 }}>{meeting.topic}</span>
                   {meeting.topicPresenter && (
-                    <span style={{ color: "var(--ink-soft)" }}> · {meeting.topicPresenter}</span>
+                    <span style={{ color: "var(--ink-soft)" }}> · {meeting.speakerUrl ? (
+                      <a href={meeting.speakerUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none" }}>
+                        {meeting.topicPresenter}
+                      </a>
+                    ) : meeting.topicPresenter}</span>
                   )}
                 </span>
               </div>

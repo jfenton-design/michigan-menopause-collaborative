@@ -101,6 +101,7 @@ export async function editMeeting(formData: FormData) {
   const id = formData.get('id') as string;
   const topic = ((formData.get('topic') as string) ?? '').trim();
   const topicPresenter = ((formData.get('topicPresenter') as string) ?? '').trim();
+  const speakerUrl = ((formData.get('speakerUrl') as string) ?? '').trim();
   const articleTitle = ((formData.get('articleTitle') as string) ?? '').trim();
   const rsvpOpen = formData.get('rsvpOpen') === 'on';
 
@@ -152,6 +153,7 @@ export async function editMeeting(formData: FormData) {
     ...existing,
     topic: topic || undefined,
     topicPresenter: topicPresenter || undefined,
+    speakerUrl: speakerUrl || undefined,
     speakerPhoto,
     articleTitle: articleTitle || undefined,
     articleUrl,
