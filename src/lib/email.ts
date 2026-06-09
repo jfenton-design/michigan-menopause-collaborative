@@ -143,7 +143,10 @@ export async function sendNotification(args: {
   replyTo?: string;
 }): Promise<{ ok: true } | { ok: false; reason: string } | { skipped: true }> {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return { skipped: true };
+  if (!apiKey) {
+    console.warn("[email] sendNotification skipped — RESEND_API_KEY is unset or empty");
+    return { skipped: true };
+  }
 
   const from = process.env.RESEND_FROM ?? "onboarding@resend.dev";
   const to   = process.env.NOTIFY_EMAIL ?? DEFAULT_NOTIFY;
@@ -183,11 +186,18 @@ export async function sendNotification(args: {
 
     if (!res.ok) {
       const body = await res.text();
-      return { ok: false, reason: `Resend ${res.status}: ${body.slice(0, 200)}` };
+      const reason = `Resend ${res.status}: ${body.slice(0, 200)}`;
+      console.error(`[email] sendNotification failed — from=${from} to=${to} :: ${reason}`);
+      return { ok: false, reason };
     }
+    const data = (await res.json().catch(() => ({}))) as { id?: string };
+    const id = data.id ?? "(no-id)";
+    console.info(`[email] sendNotification ok id=${id} from=${from} to=${to} subject="${args.subject}"`);
     return { ok: true };
   } catch (err) {
-    return { ok: false, reason: err instanceof Error ? err.message : "Unknown error" };
+    const reason = err instanceof Error ? err.message : "Unknown error";
+    console.error(`[email] sendNotification threw — from=${from} to=${to} :: ${reason}`);
+    return { ok: false, reason };
   }
 }
 
@@ -199,7 +209,10 @@ export async function sendConfirmation(args: {
   meeting: MeetingSnapshot;
 }): Promise<{ ok: true } | { ok: false; reason: string } | { skipped: true }> {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return { skipped: true };
+  if (!apiKey) {
+    console.warn(`[email] sendConfirmation skipped — RESEND_API_KEY is unset or empty (would-be to=${args.to})`);
+    return { skipped: true };
+  }
 
   const from = process.env.RESEND_FROM ?? "onboarding@resend.dev";
   const { meeting: m, name, to } = args;
@@ -288,10 +301,17 @@ export async function sendConfirmation(args: {
 
     if (!res.ok) {
       const body = await res.text();
-      return { ok: false, reason: `Resend ${res.status}: ${body.slice(0, 200)}` };
+      const reason = `Resend ${res.status}: ${body.slice(0, 200)}`;
+      console.error(`[email] sendConfirmation failed — from=${from} to=${to} :: ${reason}`);
+      return { ok: false, reason };
     }
+    const data = (await res.json().catch(() => ({}))) as { id?: string };
+    const id = data.id ?? "(no-id)";
+    console.info(`[email] sendConfirmation ok id=${id} from=${from} to=${to} meeting=${m.quarter}`);
     return { ok: true };
   } catch (err) {
-    return { ok: false, reason: err instanceof Error ? err.message : "Unknown error" };
+    const reason = err instanceof Error ? err.message : "Unknown error";
+    console.error(`[email] sendConfirmation threw — from=${from} to=${to} :: ${reason}`);
+    return { ok: false, reason };
   }
 }

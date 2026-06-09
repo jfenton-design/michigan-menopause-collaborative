@@ -97,6 +97,74 @@ export async function createMeeting(formData: FormData) {
   redirect('/admin/dashboard?saved=1');
 }
 
+export async function editMeeting(formData: FormData) {
+  const id = formData.get('id') as string;
+  const topic = ((formData.get('topic') as string) ?? '').trim();
+  const topicPresenter = ((formData.get('topicPresenter') as string) ?? '').trim();
+  const articleTitle = ((formData.get('articleTitle') as string) ?? '').trim();
+  const rsvpOpen = formData.get('rsvpOpen') === 'on';
+
+  const speakerPhotoFile = formData.get('speakerPhoto') as File | null;
+  const articlePdfFile = formData.get('articlePdf') as File | null;
+  const articleThumbFile = formData.get('articleThumb') as File | null;
+
+  const meetings = await getMeetings();
+  const existing = meetings.find(m => m.id === id);
+  if (!existing) { redirect('/admin/dashboard'); return; }
+
+  let speakerPhoto = existing.speakerPhoto;
+  let articleUrl = existing.articleUrl;
+  let articleThumb = existing.articleThumb;
+
+  if (speakerPhotoFile && speakerPhotoFile.size > 0) {
+    const ext = speakerPhotoFile.name.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const blob = await put(`mmc/speakers/${id}.${ext}`, speakerPhotoFile, {
+      access: 'private',
+      contentType: speakerPhotoFile.type || 'image/jpeg',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    });
+    speakerPhoto = blob.url;
+  }
+
+  if (articlePdfFile && articlePdfFile.size > 0) {
+    const blob = await put(`mmc/meeting-articles/${id}.pdf`, articlePdfFile, {
+      access: 'private',
+      contentType: 'application/pdf',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    });
+    articleUrl = blob.url;
+  }
+
+  if (articleThumbFile && articleThumbFile.size > 0) {
+    const ext = articleThumbFile.name.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const blob = await put(`mmc/meeting-thumbs/${id}.${ext}`, articleThumbFile, {
+      access: 'private',
+      contentType: articleThumbFile.type || 'image/jpeg',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    });
+    articleThumb = blob.url;
+  }
+
+  const updated: Meeting = {
+    ...existing,
+    topic: topic || undefined,
+    topicPresenter: topicPresenter || undefined,
+    speakerPhoto,
+    articleTitle: articleTitle || undefined,
+    articleUrl,
+    articleThumb,
+    rsvpOpen,
+  };
+
+  await saveMeetings(meetings.map(m => m.id === id ? updated : m));
+  revalidatePath('/meetings');
+  revalidatePath('/admin/dashboard');
+  redirect('/admin/dashboard?saved=1');
+}
+
 export async function deleteMeeting(formData: FormData) {
   const id = formData.get('id') as string;
   const meetings = await getMeetings();

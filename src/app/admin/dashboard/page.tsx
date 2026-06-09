@@ -8,6 +8,7 @@ import {
   editResource,
   deleteResource,
   createMeeting,
+  editMeeting,
   deleteMeeting,
   addMember,
   deleteMember,
@@ -100,9 +101,9 @@ const s = {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ saved?: string; edit?: string }>;
+  searchParams: Promise<{ saved?: string; edit?: string; editM?: string }>;
 }) {
-  const [{ saved, edit }, resources, meetings, members, content] = await Promise.all([
+  const [{ saved, edit, editM }, resources, meetings, members, content] = await Promise.all([
     searchParams,
     getResources(),
     getMeetings(),
@@ -346,17 +347,138 @@ export default async function DashboardPage({
               <div style={s.divider} />
               <div>
                 {meetings.map((m, i) => (
-                  <div key={i} style={s.row}>
-                    <div>
-                      <span style={{ fontWeight: 500, fontSize: 14 }}>{m.quarter}</span>
-                      <span style={{ marginLeft: 10, fontSize: 13, color: '#7a6e8a' }}>
-                        {m.month} {m.day}, {m.year}
-                      </span>
-                    </div>
-                    <form action={deleteMeeting}>
-                      <input type="hidden" name="id" value={m.id} />
-                      <button type="submit" style={s.deleteBtn}>Delete</button>
-                    </form>
+                  <div key={i}>
+                    {editM === m.id ? (
+                      <form action={editMeeting} encType="multipart/form-data" style={{ padding: '20px 0', borderBottom: '1px solid #ede9f7' }}>
+                        <input type="hidden" name="id" value={m.id} />
+                        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 16, color: '#1F1535' }}>
+                          Editing: {m.quarter} — {m.month} {m.day}, {m.year}
+                        </div>
+
+                        {/* Topic */}
+                        <div style={s.grid2}>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>Topic</label>
+                            <input name="topic" defaultValue={m.topic ?? ''} style={s.input} placeholder="Gastrointestinal disorders in midlife women" />
+                          </div>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>Presenter</label>
+                            <input name="topicPresenter" defaultValue={m.topicPresenter ?? ''} style={s.input} placeholder="Dr. Eva Alsheik" />
+                          </div>
+                        </div>
+
+                        {/* Speaker photo */}
+                        <div style={s.fieldGroup}>
+                          <label style={s.label}>
+                            Speaker photo
+                            {m.speakerPhoto && (
+                              <span style={{ marginLeft: 8, fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#2d6a2d' }}>
+                                — photo on file, upload to replace
+                              </span>
+                            )}
+                          </label>
+                          {m.speakerPhoto && (
+                            <img
+                              src={`/api/img?url=${encodeURIComponent(m.speakerPhoto)}`}
+                              alt="Current speaker photo"
+                              style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #d8d3e8', marginBottom: 8, display: 'block' }}
+                            />
+                          )}
+                          <input name="speakerPhoto" type="file" accept="image/*" style={{ ...s.input, padding: '8px 14px' }} />
+                        </div>
+
+                        <div style={s.divider} />
+
+                        {/* Article */}
+                        <div style={s.fieldGroup}>
+                          <label style={s.label}>Article title</label>
+                          <input name="articleTitle" defaultValue={m.articleTitle ?? ''} style={s.input} placeholder="Gut-brain axis and menopausal symptoms" />
+                        </div>
+                        <div style={s.grid2}>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>
+                              Article PDF
+                              {m.articleUrl && (
+                                <span style={{ marginLeft: 8, fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#2d6a2d' }}>
+                                  — PDF on file, upload to replace
+                                </span>
+                              )}
+                            </label>
+                            <input name="articlePdf" type="file" accept=".pdf" style={{ ...s.input, padding: '8px 14px' }} />
+                          </div>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>
+                              Article cover image
+                              {m.articleThumb && (
+                                <span style={{ marginLeft: 8, fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#2d6a2d' }}>
+                                  — image on file, upload to replace
+                                </span>
+                              )}
+                            </label>
+                            {m.articleThumb && (
+                              <img
+                                src={`/api/img?url=${encodeURIComponent(m.articleThumb)}`}
+                                alt="Current article cover"
+                                style={{ width: 36, height: 48, objectFit: 'cover', borderRadius: 3, border: '1.5px solid #d8d3e8', marginBottom: 8, display: 'block' }}
+                              />
+                            )}
+                            <input name="articleThumb" type="file" accept="image/*" style={{ ...s.input, padding: '8px 14px' }} />
+                          </div>
+                        </div>
+
+                        {/* RSVP */}
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer', marginBottom: 16 }}>
+                          <input type="checkbox" name="rsvpOpen" defaultChecked={m.rsvpOpen} />
+                          RSVP open
+                        </label>
+
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button type="submit" style={s.submitBtn}>Save meeting</button>
+                          <a href="/admin/dashboard#meetings" style={{ ...s.deleteBtn, color: '#5a5168', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>Cancel</a>
+                        </div>
+
+                        {/* Social image preview (reflects saved state) */}
+                        <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid #ede9f7' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                            <span style={{ ...s.label, marginBottom: 0 }}>Social image preview <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(reflects saved state)</span></span>
+                            <a
+                              href={`/api/og?id=${m.id}`}
+                              download={`mmc-${m.id}-social.png`}
+                              style={{ ...s.submitBtn, textDecoration: 'none', fontSize: 13, padding: '8px 16px' }}
+                            >
+                              Download PNG →
+                            </a>
+                          </div>
+                          <img
+                            src={`/api/og?id=${m.id}`}
+                            alt="Social media image preview"
+                            style={{ width: '100%', borderRadius: 8, border: '1px solid #ede9f7', display: 'block' }}
+                          />
+                        </div>
+                      </form>
+                    ) : (
+                      <div style={s.row}>
+                        <div>
+                          <span style={{ fontWeight: 500, fontSize: 14 }}>{m.quarter}</span>
+                          <span style={{ marginLeft: 10, fontSize: 13, color: '#7a6e8a' }}>
+                            {m.month} {m.day}, {m.year}
+                          </span>
+                          {m.topic && (
+                            <span style={{ marginLeft: 10, fontSize: 12, color: '#9B6FFF', fontFamily: 'var(--font-plex-mono), monospace', letterSpacing: '0.04em' }}>
+                              {m.topic.length > 40 ? m.topic.slice(0, 40) + '…' : m.topic}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <a href={`/admin/dashboard?editM=${m.id}#meetings`} style={{ ...s.deleteBtn, color: '#5a5168', textDecoration: 'none' }}>Edit</a>
+                          <a href={`/api/og?id=${m.id}`} target="_blank" rel="noopener noreferrer" style={{ ...s.deleteBtn, color: '#6D3BE4', textDecoration: 'none' }}>Social ↗</a>
+                          <form action={deleteMeeting}>
+                            <input type="hidden" name="id" value={m.id} />
+                            <button type="submit" style={s.deleteBtn}>Delete</button>
+                          </form>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

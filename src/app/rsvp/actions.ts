@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { appendSubmission } from "@/lib/storage";
 import { appendRsvp } from "@/lib/sheets";
 import { sendNotification, sendConfirmation } from "@/lib/email";
@@ -61,32 +62,40 @@ export async function submitRsvp(
     return { status: "error", message: "We couldn't save your RSVP. Please email drleff@drcarrieleff.com." };
   }
 
-  // Local audit log — fire-and-forget, never blocks the submission
-  void appendSubmission({ kind: "rsvp", receivedAt: new Date().toISOString(), payload });
+  // Background work — `after()` defers until after the response is sent,
+  // but (critically on serverless) keeps the lambda alive until these
+  // promises resolve. `void` alone caused fetches to be killed mid-flight.
+  after(async () => {
+    try {
+      await appendSubmission({ kind: "rsvp", receivedAt: new Date().toISOString(), payload });
+    } catch (err) {
+      console.error("[rsvp] appendSubmission failed:", err);
+    }
 
-  void sendNotification({
-    subject: `RSVP — ${name} — ${meetingLabel} (${attendingRaw || "yes"})`,
-    title: `New RSVP — ${meetingLabel}`,
-    replyTo: email,
-    rows: [
-      { label: "Meeting",     value: meetingLabel },
-      { label: "Attending",   value: attendingRaw || "yes" },
-      { label: "Name",        value: name },
-      { label: "Credentials", value: credentials },
-      { label: "Email",       value: email },
-      { label: "Phone",       value: phone },
-      { label: "Practice",    value: practice },
-      { label: "Guests",      value: String(guestCount) },
-      { label: "Guest names", value: guestNames },
-      { label: "Dietary",     value: dietary },
-      { label: "Notes",       value: notes },
-    ],
+    await sendNotification({
+      subject: `RSVP — ${name} — ${meetingLabel} (${attendingRaw || "yes"})`,
+      title: `New RSVP — ${meetingLabel}`,
+      replyTo: email,
+      rows: [
+        { label: "Meeting",     value: meetingLabel },
+        { label: "Attending",   value: attendingRaw || "yes" },
+        { label: "Name",        value: name },
+        { label: "Credentials", value: credentials },
+        { label: "Email",       value: email },
+        { label: "Phone",       value: phone },
+        { label: "Practice",    value: practice },
+        { label: "Guests",      value: String(guestCount) },
+        { label: "Guest names", value: guestNames },
+        { label: "Dietary",     value: dietary },
+        { label: "Notes",       value: notes },
+      ],
+    });
+
+    // Send confirmation to attendee (with .ics) — only if they're coming
+    if (attending) {
+      await sendConfirmation({ to: email, name, meeting });
+    }
   });
-
-  // Send confirmation to attendee (with .ics) — only if they're coming
-  if (attending) {
-    void sendConfirmation({ to: email, name, meeting });
-  }
 
   return { status: "ok", meetingLabel, attending };
 }

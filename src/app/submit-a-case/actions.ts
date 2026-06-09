@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { appendSubmission } from "@/lib/storage";
 import { appendCase } from "@/lib/sheets";
 import { sendNotification } from "@/lib/email";
@@ -46,22 +47,29 @@ export async function submitCase(
     return { status: "error", message: "We couldn't save your submission. Please email drleff@drcarrieleff.com." };
   }
 
-  // Local audit log — fire-and-forget
-  void appendSubmission({ kind: "case", receivedAt: new Date().toISOString(), payload });
+  // Background work — `after()` keeps the lambda alive until these
+  // promises resolve. `void` alone caused fetches to be killed mid-flight.
+  after(async () => {
+    try {
+      await appendSubmission({ kind: "case", receivedAt: new Date().toISOString(), payload });
+    } catch (err) {
+      console.error("[case] appendSubmission failed:", err);
+    }
 
-  void sendNotification({
-    subject: `Case submission — ${name}`,
-    title: `New case submission — ${name}`,
-    replyTo: email,
-    rows: [
-      { label: "Name",           value: name },
-      { label: "Credentials",    value: credentials },
-      { label: "Email",          value: email },
-      { label: "Phone",          value: phone },
-      { label: "Target meeting", value: targetMeeting },
-      { label: "Case summary",   value: summary },
-      { label: "Question",       value: question },
-    ],
+    await sendNotification({
+      subject: `Case submission — ${name}`,
+      title: `New case submission — ${name}`,
+      replyTo: email,
+      rows: [
+        { label: "Name",           value: name },
+        { label: "Credentials",    value: credentials },
+        { label: "Email",          value: email },
+        { label: "Phone",          value: phone },
+        { label: "Target meeting", value: targetMeeting },
+        { label: "Case summary",   value: summary },
+        { label: "Question",       value: question },
+      ],
+    });
   });
 
   return { status: "ok" };

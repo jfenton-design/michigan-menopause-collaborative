@@ -14,6 +14,13 @@ export type Meeting = {
   locationShort: string;
   rsvpOpen?: boolean;
   showKarmanos?: boolean;
+  // Topic & article
+  topic?: string;
+  topicPresenter?: string;
+  speakerPhoto?: string;
+  articleTitle?: string;
+  articleUrl?: string;
+  articleThumb?: string;
 };
 
 export const NEXT_MEETING: Meeting = {
@@ -27,6 +34,8 @@ export const NEXT_MEETING: Meeting = {
   location: "Danialle's Clubhouse\n235 Pierce Street, Birmingham, MI",
   locationShort: "Danialle's Clubhouse · Birmingham",
   rsvpOpen: true,
+  topic: "Gastrointestinal disorders in midlife women",
+  topicPresenter: "Dr. Eva Alsheik",
 };
 
 export const UPCOMING_MEETINGS: Meeting[] = [

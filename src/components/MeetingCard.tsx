@@ -55,6 +55,23 @@ export function MeetingCard({
             <span className="pill pill--ghost">In person</span>
             <span className="pill pill--ghost">Members + invited guests</span>
           </div>
+          {meeting.topic && (
+            <div style={{ marginTop: 20, display: "flex", alignItems: "center", gap: 12 }}>
+              {meeting.speakerPhoto && (
+                <img
+                  src={`/api/img?url=${encodeURIComponent(meeting.speakerPhoto)}`}
+                  alt={meeting.topicPresenter ?? "Speaker"}
+                  style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid var(--rule)" }}
+                />
+              )}
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>{meeting.topic}</div>
+                {meeting.topicPresenter && (
+                  <div style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 4 }}>{meeting.topicPresenter}</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={{ display: "grid", gap: 28 }}>
@@ -81,6 +98,11 @@ export function MeetingCard({
               Submit a case
             </Link>
           </div>
+
+          {/* Discussion article */}
+          {meeting.articleTitle && (
+            <ArticleCard meeting={meeting} />
+          )}
 
           {/* Venue host thank-you */}
           {meeting.showKarmanos !== false && (
@@ -115,48 +137,70 @@ export function MeetingCard({
   }
 
   if (variant === "compact") {
+    const hasExtra = !!(meeting.topic || meeting.articleTitle);
     return (
       <article
         style={{
-          display: "grid",
-          gridTemplateColumns: "120px 1fr auto",
-          gap: 32,
-          alignItems: "center",
           padding: "24px 0",
           borderBottom: "1px solid var(--rule)",
         }}
       >
-        <div>
-          <div
-            style={{
-              fontFamily: "var(--font-display)",
-              fontWeight: "var(--display-weight)",
-              fontSize: 42,
-              lineHeight: 0.92,
-              color: "var(--ink)",
-            }}
-          >
-            {meeting.day}
+        <div style={{ display: "grid", gridTemplateColumns: "120px 1fr auto", gap: 32, alignItems: "center" }}>
+          <div>
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: "var(--display-weight)",
+                fontSize: 42,
+                lineHeight: 0.92,
+                color: "var(--ink)",
+              }}
+            >
+              {meeting.day}
+            </div>
+            <div className="eyebrow" style={{ marginTop: 6 }}>
+              {meeting.month} · {meeting.year}
+            </div>
           </div>
-          <div className="eyebrow" style={{ marginTop: 6 }}>
-            {meeting.month} · {meeting.year}
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6, color: "var(--accent)" }}>
+              {meeting.quarter}
+            </div>
+            <div style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 6 }}>
+              {meeting.weekday} · {meeting.time} · {meeting.locationShort}
+            </div>
+            {meeting.topic && (
+              <div style={{ marginTop: 8, fontSize: 14, color: "var(--ink)", display: "flex", alignItems: "center", gap: 8 }}>
+                {meeting.speakerPhoto && (
+                  <img
+                    src={`/api/img?url=${encodeURIComponent(meeting.speakerPhoto)}`}
+                    alt={meeting.topicPresenter ?? "Speaker"}
+                    style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid var(--rule)" }}
+                  />
+                )}
+                <span>
+                  <span style={{ fontWeight: 500 }}>{meeting.topic}</span>
+                  {meeting.topicPresenter && (
+                    <span style={{ color: "var(--ink-soft)" }}> · {meeting.topicPresenter}</span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
+          {!isPast && (meeting.rsvpOpen ? (
+            <Link href={`/rsvp?meeting=${meeting.id}`} className="btn btn--ghost" style={{ alignSelf: "center" }}>
+              RSVP →
+            </Link>
+          ) : (
+            <span className="eyebrow" style={{ alignSelf: "center" }}>RSVP soon</span>
+          ))}
         </div>
-        <div>
-          <div className="eyebrow" style={{ marginBottom: 6, color: "var(--accent)" }}>
-            {meeting.quarter}
+
+        {hasExtra && meeting.articleTitle && (
+          <div style={{ marginTop: 14, paddingLeft: 152 }}>
+            <ArticleCard meeting={meeting} />
           </div>
-          <div style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 6 }}>
-            {meeting.weekday} · {meeting.time} · {meeting.locationShort}
-          </div>
-        </div>
-        {!isPast && (meeting.rsvpOpen ? (
-          <Link href={`/rsvp?meeting=${meeting.id}`} className="btn btn--ghost" style={{ alignSelf: "center" }}>
-            RSVP →
-          </Link>
-        ) : (
-          <span className="eyebrow" style={{ alignSelf: "center" }}>RSVP soon</span>
-        ))}
+        )}
       </article>
     );
   }
@@ -179,6 +223,60 @@ export function MeetingCard({
       </div>
       <div style={{ fontSize: 14, color: "var(--ink-soft)" }}>{meeting.locationShort}</div>
     </article>
+  );
+}
+
+/* --- Article card --- */
+function ArticleCard({ meeting }: { meeting: Meeting }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        padding: "14px 18px",
+        background: "var(--paper-2)",
+        borderRadius: "var(--radius-md)",
+        border: "1px solid var(--rule)",
+      }}
+    >
+      {meeting.articleThumb ? (
+        <img
+          src={`/api/img?url=${encodeURIComponent(meeting.articleThumb)}`}
+          alt=""
+          style={{ width: 44, height: 58, objectFit: "cover", borderRadius: 4, flexShrink: 0, border: "1px solid var(--rule)" }}
+        />
+      ) : (
+        <svg width="44" height="58" viewBox="0 0 44 58" fill="none" style={{ flexShrink: 0 }}>
+          <rect x="1" y="1" width="42" height="56" rx="3" fill="white" stroke="var(--rule-strong)" strokeWidth="1.5"/>
+          <path d="M30 1v9a2 2 0 002 2h10" stroke="var(--rule-strong)" strokeWidth="1.5"/>
+          <rect x="8" y="20" width="20" height="1.5" rx="0.75" fill="var(--rule-strong)"/>
+          <rect x="8" y="25" width="28" height="1.5" rx="0.75" fill="var(--rule-strong)"/>
+          <rect x="8" y="30" width="28" height="1.5" rx="0.75" fill="var(--rule-strong)"/>
+          <rect x="8" y="35" width="22" height="1.5" rx="0.75" fill="var(--rule-strong)"/>
+          <rect x="8" y="40" width="26" height="1.5" rx="0.75" fill="var(--rule-strong)"/>
+        </svg>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 11, letterSpacing: "0.08em", color: "var(--accent)", fontFamily: "var(--font-mono)", textTransform: "uppercase", marginBottom: 5 }}>
+          Discussion article
+        </div>
+        <div style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.3, color: "var(--ink)" }}>
+          {meeting.articleTitle}
+        </div>
+      </div>
+      {meeting.articleUrl && (
+        <a
+          href={`/api/pdf?url=${encodeURIComponent(meeting.articleUrl)}`}
+          className="btn btn--ghost"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ flexShrink: 0 }}
+        >
+          Download →
+        </a>
+      )}
+    </div>
   );
 }
 

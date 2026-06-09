@@ -50,8 +50,14 @@ export async function saveResources(resources: Resource[]): Promise<void> {
 }
 
 export async function getMeetings(): Promise<Meeting[]> {
-  const fallback = [...UPCOMING_MEETINGS, ...PAST_MEETINGS];
-  return readData<Meeting[]>('mmc/meetings.json', fallback);
+  const staticAll = [...UPCOMING_MEETINGS, ...PAST_MEETINGS];
+  const stored = await readData<Meeting[]>('mmc/meetings.json', staticAll);
+  // Merge: static data provides defaults for new optional fields (topic, article, etc.)
+  // Blob data wins on any key it explicitly sets; static fills in gaps.
+  return stored.map(m => {
+    const def = staticAll.find(s => s.id === m.id);
+    return def ? { ...def, ...m } : m;
+  });
 }
 
 export async function saveMeetings(meetings: Meeting[]): Promise<void> {
