@@ -18,6 +18,8 @@ let _med: ArrayBuffer | null = null;
 
 const JSDELIVR = 'https://cdn.jsdelivr.net/npm/@fontsource/dm-sans@5.1.1/files';
 const SITE = 'https://www.michiganmenopause.com';
+// Private blob store — matches admin-db.ts BLOB_BASE
+const BLOB_BASE = 'https://bfbwrnmnnw2zzg0c.private.blob.vercel-storage.com';
 
 async function fetchBuf(url: string): Promise<ArrayBuffer> {
   const res = await fetch(url);
@@ -47,50 +49,69 @@ function toDataImg(ab: ArrayBuffer, mime = 'image/png'): string {
   return `data:${mime};base64,${btoa(bin)}`;
 }
 
+// Call the Vercel Blob API directly — mirrors what @vercel/blob head() does internally.
+// @vercel/blob bundles Node.js-only deps (stream, is-buffer) so it can't be imported
+// on Edge runtime. This is the pure-fetch equivalent.
+async function blobDownloadUrl(blobUrl: string, token: string): Promise<string | null> {
+  const apiRes = await fetch(
+    `https://vercel.com/api/blob?url=${encodeURIComponent(blobUrl)}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!apiRes.ok) return null;
+  const json = await apiRes.json() as { downloadUrl?: string };
+  return json.downloadUrl ?? null;
+}
+
+// Read a private blob JSON file — mirrors admin-db.ts readData() without the SDK.
+async function readBlobJson<T>(pathname: string, fallback: T, token: string): Promise<T> {
+  try {
+    const dlUrl = await blobDownloadUrl(`${BLOB_BASE}/${pathname}`, token);
+    if (!dlUrl) return fallback;
+    const res = await fetch(dlUrl, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return fallback;
+    return res.json() as Promise<T>;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const id = req.nextUrl.searchParams.get('id');
     if (!id) return new Response('Missing ?id', { status: 400 });
 
-    // Try blob-stored meeting data first, fall back to static
-    let meeting: Meeting | undefined;
-    try {
-      const { getMeetings } = await import('@/lib/admin-db');
-      meeting = (await getMeetings()).find(m => m.id === id);
-    } catch { /* no blob token in local dev */ }
-    if (!meeting) {
-      meeting = [...UPCOMING_MEETINGS, ...PAST_MEETINGS].find(m => m.id === id);
+    const token = process.env.BLOB_READ_WRITE_TOKEN ?? '';
+    const staticAll = [...UPCOMING_MEETINGS, ...PAST_MEETINGS];
+
+    // Fetch meeting data directly from Vercel Blob — no @vercel/blob SDK (not edge-safe)
+    let allMeetings = staticAll;
+    if (token) {
+      const stored = await readBlobJson<Meeting[]>('mmc/meetings.json', staticAll, token);
+      // Merge: blob wins on any key it sets; static fills gaps (same logic as admin-db)
+      allMeetings = stored.map(m => {
+        const def = staticAll.find(s => s.id === m.id);
+        return def ? { ...def, ...m } : m;
+      });
     }
+    const meeting = allMeetings.find(m => m.id === id) ?? staticAll.find(m => m.id === id);
     if (!meeting) return new Response('Meeting not found', { status: 404 });
 
     // Load fonts from jsDelivr CDN (WOFF — Satori rejects WOFF2)
     const { reg, med, bold } = await loadFonts();
 
-    // Speaker photo → base64 data URL (from private Vercel Blob)
-    // Note: @vercel/blob bundles Node.js-only modules (stream, is-buffer) so it
-    // can't be dynamically imported on Edge runtime. We replicate head() directly:
-    // GET https://vercel.com/api/blob?url=<encoded> + Bearer token → { downloadUrl }
+    // Speaker photo → base64 data URL (fetched via Vercel Blob API, no SDK)
     let speakerSrc: string | null = null;
-    if (meeting.speakerPhoto) {
+    if (meeting.speakerPhoto && token) {
       try {
-        const token = process.env.BLOB_READ_WRITE_TOKEN ?? '';
-        if (token) {
-          const apiRes = await fetch(
-            `https://vercel.com/api/blob?url=${encodeURIComponent(meeting.speakerPhoto)}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          if (apiRes.ok) {
-            const { downloadUrl } = await apiRes.json() as { downloadUrl: string };
-            const imgRes = await fetch(downloadUrl, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            if (imgRes.ok) {
-              const mime = imgRes.headers.get('content-type') ?? 'image/jpeg';
-              speakerSrc = toDataImg(await imgRes.arrayBuffer(), mime);
-            }
+        const dlUrl = await blobDownloadUrl(meeting.speakerPhoto, token);
+        if (dlUrl) {
+          const imgRes = await fetch(dlUrl, { headers: { Authorization: `Bearer ${token}` } });
+          if (imgRes.ok) {
+            const mime = imgRes.headers.get('content-type') ?? 'image/jpeg';
+            speakerSrc = toDataImg(await imgRes.arrayBuffer(), mime);
           }
         }
-      } catch { /* ignore — photo not uploaded yet */ }
+      } catch { /* ignore — photo not accessible */ }
     }
 
     // Karmanos headshot → fetch from live site
