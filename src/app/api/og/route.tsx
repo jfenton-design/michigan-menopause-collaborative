@@ -113,13 +113,6 @@ export async function GET(req: NextRequest) {
       } catch { /* ignore */ }
     }
 
-    // MMC logo → fetch from live site
-    let logoSrc: string | null = null;
-    try {
-      const res = await fetch(`${SITE}/assets/mmc-logo.png`);
-      if (res.ok) logoSrc = toDataImg(await res.arrayBuffer());
-    } catch { /* ignore */ }
-
     const topic = meeting.topic ?? `${meeting.quarter} Meeting`;
     const topicSize = topic.length > 90 ? 52 : topic.length > 65 ? 62 : topic.length > 45 ? 74 : 88;
     const hasSpeaker = !!(speakerSrc || meeting.topicPresenter);
@@ -161,9 +154,12 @@ export async function GET(req: NextRequest) {
             {/* HEADER: big mark + name + quarter */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 52 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                {logoSrc && (
-                  <img src={logoSrc} width={88} height={88} style={{ flexShrink: 0 }} />
-                )}
+                <svg width="88" height="88" viewBox="-65 -65 130 130" style={{ flexShrink: 0 }}>
+                  {PETAL_ANGLES.map(a => (
+                    <path key={a} d={PETAL_PATH} fill={ACCENT} transform={`rotate(${a})`} />
+                  ))}
+                  <circle r="30" fill="none" stroke={INK} strokeWidth="1.8" />
+                </svg>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ display: 'flex', fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4 }}>Michigan Menopause</span>
                   <span style={{ display: 'flex', fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4 }}>Collaborative</span>
@@ -202,7 +198,7 @@ export async function GET(req: NextRequest) {
                   {speakerSrc ? (
                     /* Zoom: container clips to circle; img is 1.45× larger, shifted up to frame the face */
                     <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `3px solid ${ACCENT}`, display: 'flex' }}>
-                      <img src={speakerSrc} style={{ width: 116, height: 116, marginLeft: -18, marginTop: -14 }} />
+                      <img src={speakerSrc} style={{ width: 116, marginLeft: -18, marginTop: -14 }} />
                     </div>
                   ) : (
                     <div style={{
@@ -248,7 +244,7 @@ export async function GET(req: NextRequest) {
               {karmanosSrc && meeting.showKarmanos !== false && (
                 /* Zoom: same container-clip technique, shifted up to show Danialle's face */
                 <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.25)', display: 'flex' }}>
-                  <img src={karmanosSrc} style={{ width: 80, height: 80, marginLeft: -12, marginTop: -10 }} />
+                  <img src={karmanosSrc} style={{ width: 80, marginLeft: -12, marginTop: -10 }} />
                 </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column' }}>
