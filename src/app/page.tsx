@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { MeetingCard } from "@/components/MeetingCard";
@@ -6,6 +7,16 @@ import { CONTACT_EMAIL, NEXT_MEETING } from "@/lib/data";
 import { getContent, getMeetings } from "@/lib/admin-db";
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const allMeetings = await getMeetings();
+  const nextMeeting = allMeetings.find(m => m.rsvpOpen) ?? allMeetings[0] ?? NEXT_MEETING;
+  return {
+    openGraph: {
+      images: [{ url: `/api/og?id=${nextMeeting.id}`, width: 1080, height: 1080 }],
+    },
+  };
+}
 
 const VALUE_PROPS = [
   {

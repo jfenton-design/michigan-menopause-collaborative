@@ -4,7 +4,17 @@ import { PageHeader, SectionHeading } from "@/components/PageHeader";
 import { getMeetings, getContent } from "@/lib/admin-db";
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: "Meetings" };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const allMeetings = await getMeetings();
+  const nextMeeting = allMeetings.find(m => m.rsvpOpen) ?? allMeetings[0];
+  return {
+    title: "Meetings",
+    openGraph: nextMeeting
+      ? { images: [{ url: `/api/og?id=${nextMeeting.id}`, width: 1080, height: 1080 }] }
+      : undefined,
+  };
+}
 
 export default async function MeetingsPage() {
   const [allMeetings, content] = await Promise.all([getMeetings(), getContent()]);
