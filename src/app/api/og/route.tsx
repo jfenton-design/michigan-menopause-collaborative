@@ -200,7 +200,10 @@ export async function GET(req: NextRequest) {
               {hasSpeaker && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                   {speakerSrc ? (
-                    <img src={speakerSrc} style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center top', border: `3px solid ${ACCENT}`, flexShrink: 0 }} />
+                    /* Zoom: container clips to circle; img is 1.45× larger, shifted up to frame the face */
+                    <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `3px solid ${ACCENT}`, display: 'flex' }}>
+                      <img src={speakerSrc} style={{ width: 116, height: 116, marginLeft: -18, marginTop: -14 }} />
+                    </div>
                   ) : (
                     <div style={{
                       width: 80, height: 80, borderRadius: '50%', flexShrink: 0,
@@ -243,7 +246,10 @@ export async function GET(req: NextRequest) {
             {/* Location + karmanos */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
               {karmanosSrc && meeting.showKarmanos !== false && (
-                <img src={karmanosSrc} style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center top', border: '2px solid rgba(255,255,255,0.25)', flexShrink: 0 }} />
+                /* Zoom: same container-clip technique, shifted up to show Danialle's face */
+                <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.25)', display: 'flex' }}>
+                  <img src={karmanosSrc} style={{ width: 80, height: 80, marginLeft: -12, marginTop: -10 }} />
+                </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {meeting.location.split('\n').map((line: string, i: number) => (
