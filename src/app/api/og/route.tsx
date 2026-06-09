@@ -67,17 +67,30 @@ export async function GET(req: NextRequest) {
     const { reg, med, bold } = await loadFonts();
 
     // Speaker photo → base64 data URL (from private Vercel Blob)
+    // Note: @vercel/blob bundles Node.js-only modules (stream, is-buffer) so it
+    // can't be dynamically imported on Edge runtime. We replicate head() directly:
+    // GET https://vercel.com/api/blob?url=<encoded> + Bearer token → { downloadUrl }
     let speakerSrc: string | null = null;
     if (meeting.speakerPhoto) {
       try {
-        const { head } = await import('@vercel/blob');
-        const info = await head(meeting.speakerPhoto);
-        const res = await fetch(info.downloadUrl);
-        if (res.ok) {
-          const mime = res.headers.get('content-type') ?? 'image/jpeg';
-          speakerSrc = toDataImg(await res.arrayBuffer(), mime);
+        const token = process.env.BLOB_READ_WRITE_TOKEN ?? '';
+        if (token) {
+          const apiRes = await fetch(
+            `https://vercel.com/api/blob?url=${encodeURIComponent(meeting.speakerPhoto)}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (apiRes.ok) {
+            const { downloadUrl } = await apiRes.json() as { downloadUrl: string };
+            const imgRes = await fetch(downloadUrl, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (imgRes.ok) {
+              const mime = imgRes.headers.get('content-type') ?? 'image/jpeg';
+              speakerSrc = toDataImg(await imgRes.arrayBuffer(), mime);
+            }
+          }
         }
-      } catch { /* ignore — photo not uploaded yet or no token */ }
+      } catch { /* ignore — photo not uploaded yet */ }
     }
 
     // Karmanos headshot → fetch from live site
