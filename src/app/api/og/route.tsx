@@ -154,13 +154,18 @@ export async function GET(req: NextRequest) {
             {/* HEADER: big mark + name + quarter */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 52 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                <svg width="88" height="88" viewBox="-65 -65 130 130" style={{ flexShrink: 0 }}>
-                  {PETAL_ANGLES.map(a => (
-                    <path key={a} d={PETAL_PATH} fill={ACCENT} transform={`rotate(${a})`} />
-                  ))}
-                  <circle r="30" fill="none" stroke={INK} strokeWidth="1.8" />
-                  <text y="6.5" textAnchor="middle" fontFamily="DM Sans" fontWeight="600" fontSize="19" letterSpacing="-0.5" fill={INK}>MMC</text>
-                </svg>
+                {/* Logo: SVG bloom mark + HTML text overlay (SVG <text> unreliable in Satori) */}
+                <div style={{ position: 'relative', width: 88, height: 88, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="88" height="88" viewBox="-65 -65 130 130" style={{ position: 'absolute', top: 0, left: 0, display: 'flex' }}>
+                    {PETAL_ANGLES.map(a => (
+                      <g key={a} transform={`rotate(${a})`}>
+                        <path d={PETAL_PATH} fill={ACCENT} />
+                      </g>
+                    ))}
+                    <circle r="30" fill="none" stroke={INK} strokeWidth="1.8" />
+                  </svg>
+                  <span style={{ display: 'flex', position: 'relative', fontSize: 13, fontWeight: 700, color: INK, letterSpacing: '-0.02em' }}>MMC</span>
+                </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ display: 'flex', fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4 }}>Michigan Menopause</span>
                   <span style={{ display: 'flex', fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4 }}>Collaborative</span>
@@ -197,9 +202,8 @@ export async function GET(req: NextRequest) {
               {hasSpeaker && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                   {speakerSrc ? (
-                    /* Zoom: container clips to circle; img is 1.45× larger, shifted up to frame the face */
                     <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `3px solid ${ACCENT}`, display: 'flex' }}>
-                      <img src={speakerSrc} style={{ width: 100, marginLeft: -10, marginTop: -10 }} />
+                      <img src={speakerSrc} style={{ width: 80, height: 80, objectFit: 'cover' }} />
                     </div>
                   ) : (
                     <div style={{
@@ -243,9 +247,8 @@ export async function GET(req: NextRequest) {
             {/* Location + karmanos */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
               {karmanosSrc && meeting.showKarmanos !== false && (
-                /* Zoom: same container-clip technique, shifted up to show Danialle's face */
                 <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.25)', display: 'flex' }}>
-                  <img src={karmanosSrc} style={{ width: 70, marginLeft: -14, marginTop: -8 }} />
+                  <img src={karmanosSrc} style={{ width: 56, height: 56, objectFit: 'cover' }} />
                 </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column' }}>
