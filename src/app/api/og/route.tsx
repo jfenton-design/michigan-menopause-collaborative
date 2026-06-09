@@ -198,7 +198,7 @@ export async function GET(req: NextRequest) {
                   {speakerSrc ? (
                     /* Zoom: container clips to circle; img is 1.45× larger, shifted up to frame the face */
                     <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `3px solid ${ACCENT}`, display: 'flex' }}>
-                      <img src={speakerSrc} style={{ width: 116, marginLeft: -18, marginTop: -14 }} />
+                      <img src={speakerSrc} style={{ width: 100, marginLeft: -10, marginTop: -10 }} />
                     </div>
                   ) : (
                     <div style={{
@@ -244,7 +244,7 @@ export async function GET(req: NextRequest) {
               {karmanosSrc && meeting.showKarmanos !== false && (
                 /* Zoom: same container-clip technique, shifted up to show Danialle's face */
                 <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.25)', display: 'flex' }}>
-                  <img src={karmanosSrc} style={{ width: 80, marginLeft: -12, marginTop: -10 }} />
+                  <img src={karmanosSrc} style={{ width: 80, marginLeft: -22, marginTop: -10 }} />
                 </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column' }}>
