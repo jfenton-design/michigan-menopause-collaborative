@@ -3,7 +3,7 @@ import Link from "next/link";
 import { MeetingCard } from "@/components/MeetingCard";
 import { SectionHeading } from "@/components/PageHeader";
 import { CONTACT_EMAIL, NEXT_MEETING } from "@/lib/data";
-import { getContent } from "@/lib/admin-db";
+import { getContent, getMeetings } from "@/lib/admin-db";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +26,8 @@ const VALUE_PROPS = [
 ];
 
 export default async function HomePage() {
-  const content = await getContent();
+  const [content, allMeetings] = await Promise.all([getContent(), getMeetings()]);
+  const nextMeeting = allMeetings.find(m => m.rsvpOpen) ?? allMeetings[0] ?? NEXT_MEETING;
   return (
     <>
       <div className="hero-wrap">
@@ -135,7 +136,7 @@ export default async function HomePage() {
 
       {/* Next meeting hero */}
       <section className="page section" style={{ paddingTop: 56, paddingBottom: 80 }}>
-        <MeetingCard meeting={NEXT_MEETING} variant="hero" />
+        <MeetingCard meeting={nextMeeting} variant="hero" />
       </section>
 
       {/* Membership */}
