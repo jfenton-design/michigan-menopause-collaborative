@@ -61,7 +61,7 @@ export function MeetingCard({
                 <img
                   src={`/api/img?url=${encodeURIComponent(meeting.speakerPhoto)}`}
                   alt={meeting.topicPresenter ?? "Speaker"}
-                  style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid var(--rule)" }}
+                  style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", objectPosition: "center top", flexShrink: 0, border: "1px solid var(--rule)" }}
                 />
               )}
               <div>
@@ -175,7 +175,7 @@ export function MeetingCard({
                   <img
                     src={`/api/img?url=${encodeURIComponent(meeting.speakerPhoto)}`}
                     alt={meeting.topicPresenter ?? "Speaker"}
-                    style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid var(--rule)" }}
+                    style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", objectPosition: "center top", flexShrink: 0, border: "1px solid var(--rule)" }}
                   />
                 )}
                 <span>
