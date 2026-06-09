@@ -37,6 +37,7 @@ function toDataImg(buf: Buffer, mime = 'image/png') {
 }
 
 export async function GET(req: NextRequest) {
+  try {
   const id = req.nextUrl.searchParams.get('id');
   if (!id) return new Response('Missing ?id', { status: 400 });
 
@@ -231,4 +232,9 @@ export async function GET(req: NextRequest) {
       ],
     }
   );
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? `${err.message}\n${err.stack}` : String(err);
+    console.error('[og] render error:', msg);
+    return new Response(`OG error: ${msg}`, { status: 500, headers: { 'content-type': 'text/plain' } });
+  }
 }
