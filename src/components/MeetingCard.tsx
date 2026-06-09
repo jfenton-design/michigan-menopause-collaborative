@@ -268,12 +268,27 @@ function ArticleCard({ meeting }: { meeting: Meeting }) {
       {meeting.articleUrl && (
         <a
           href={`/api/pdf?url=${encodeURIComponent(meeting.articleUrl)}`}
-          className="btn btn--ghost"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ flexShrink: 0 }}
+          title="Download article"
+          style={{
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            background: "var(--accent-subtle, rgba(109,59,228,0.08))",
+            color: "var(--accent)",
+            transition: "background 0.15s",
+          }}
         >
-          Download →
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M9 2v9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            <path d="M5.5 8l3.5 3.5L12.5 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M3 15h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+          </svg>
         </a>
       )}
     </div>
