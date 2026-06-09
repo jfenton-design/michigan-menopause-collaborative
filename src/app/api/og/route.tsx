@@ -49,25 +49,18 @@ function toDataImg(ab: ArrayBuffer, mime = 'image/png'): string {
   return `data:${mime};base64,${btoa(bin)}`;
 }
 
-// Call the Vercel Blob API directly — mirrors what @vercel/blob head() does internally.
-// @vercel/blob bundles Node.js-only deps (stream, is-buffer) so it can't be imported
-// on Edge runtime. This is the pure-fetch equivalent.
-async function blobDownloadUrl(blobUrl: string, token: string): Promise<string | null> {
-  const apiRes = await fetch(
-    `https://vercel.com/api/blob?url=${encodeURIComponent(blobUrl)}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  if (!apiRes.ok) return null;
-  const json = await apiRes.json() as { downloadUrl?: string };
-  return json.downloadUrl ?? null;
+// Fetch a private Vercel Blob URL directly with Bearer auth.
+// This mirrors what @vercel/blob get() does internally (it uses undici.fetch with
+// the same auth header). @vercel/blob cannot be imported on Edge runtime because
+// it bundles Node.js-only deps (stream, is-buffer, undici).
+async function fetchPrivateBlob(blobUrl: string, token: string): Promise<Response> {
+  return fetch(blobUrl, { headers: { authorization: `Bearer ${token}` } });
 }
 
-// Read a private blob JSON file — mirrors admin-db.ts readData() without the SDK.
+// Read a private blob JSON file without the SDK.
 async function readBlobJson<T>(pathname: string, fallback: T, token: string): Promise<T> {
   try {
-    const dlUrl = await blobDownloadUrl(`${BLOB_BASE}/${pathname}`, token);
-    if (!dlUrl) return fallback;
-    const res = await fetch(dlUrl, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetchPrivateBlob(`${BLOB_BASE}/${pathname}`, token);
     if (!res.ok) return fallback;
     return res.json() as Promise<T>;
   } catch {
@@ -99,17 +92,14 @@ export async function GET(req: NextRequest) {
     // Load fonts from jsDelivr CDN (WOFF — Satori rejects WOFF2)
     const { reg, med, bold } = await loadFonts();
 
-    // Speaker photo → base64 data URL (fetched via Vercel Blob API, no SDK)
+    // Speaker photo → base64 data URL (direct bearer-auth fetch, no SDK)
     let speakerSrc: string | null = null;
     if (meeting.speakerPhoto && token) {
       try {
-        const dlUrl = await blobDownloadUrl(meeting.speakerPhoto, token);
-        if (dlUrl) {
-          const imgRes = await fetch(dlUrl, { headers: { Authorization: `Bearer ${token}` } });
-          if (imgRes.ok) {
-            const mime = imgRes.headers.get('content-type') ?? 'image/jpeg';
-            speakerSrc = toDataImg(await imgRes.arrayBuffer(), mime);
-          }
+        const imgRes = await fetchPrivateBlob(meeting.speakerPhoto, token);
+        if (imgRes.ok) {
+          const mime = imgRes.headers.get('content-type') ?? 'image/jpeg';
+          speakerSrc = toDataImg(await imgRes.arrayBuffer(), mime);
         }
       } catch { /* ignore — photo not accessible */ }
     }

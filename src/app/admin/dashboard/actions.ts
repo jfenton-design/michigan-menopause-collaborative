@@ -105,6 +105,17 @@ export async function editMeeting(formData: FormData) {
   const articleTitle = ((formData.get('articleTitle') as string) ?? '').trim();
   const rsvpOpen = formData.get('rsvpOpen') === 'on';
 
+  // Date / logistics fields (editable so stored data can be corrected)
+  const quarter = (formData.get('quarter') as string | null)?.trim();
+  const weekday = (formData.get('weekday') as string | null)?.trim();
+  const month = (formData.get('month') as string | null)?.trim();
+  const day = (formData.get('day') as string | null)?.trim();
+  const year = (formData.get('year') as string | null)?.trim();
+  const time = (formData.get('time') as string | null)?.trim();
+  const location = (formData.get('location') as string | null)?.trim();
+  const locationShort = (formData.get('locationShort') as string | null)?.trim();
+  const showKarmanos = formData.get('showKarmanos') === 'on';
+
   const speakerPhotoFile = formData.get('speakerPhoto') as File | null;
   const articlePdfFile = formData.get('articlePdf') as File | null;
   const articleThumbFile = formData.get('articleThumb') as File | null;
@@ -151,6 +162,16 @@ export async function editMeeting(formData: FormData) {
 
   const updated: Meeting = {
     ...existing,
+    // Only override date/logistics if the form sent non-empty values
+    ...(quarter    ? { quarter }      : {}),
+    ...(weekday    ? { weekday }      : {}),
+    ...(month      ? { month }        : {}),
+    ...(day        ? { day }          : {}),
+    ...(year       ? { year }         : {}),
+    ...(time       ? { time }         : {}),
+    ...(location   ? { location }     : {}),
+    ...(locationShort ? { locationShort } : {}),
+    showKarmanos,
     topic: topic || undefined,
     topicPresenter: topicPresenter || undefined,
     speakerUrl: speakerUrl || undefined,

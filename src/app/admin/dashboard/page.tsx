@@ -355,6 +355,56 @@ export default async function DashboardPage({
                           Editing: {m.quarter} — {m.month} {m.day}, {m.year}
                         </div>
 
+                        {/* Date / logistics */}
+                        <div style={s.grid2}>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>Quarter</label>
+                            <input name="quarter" defaultValue={m.quarter} required style={s.input} />
+                          </div>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>Weekday</label>
+                            <select name="weekday" defaultValue={m.weekday} style={s.input}>
+                              {WEEKDAYS.map(d => <option key={d}>{d}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                        <div style={s.grid2}>
+                          <div style={s.fieldGroup}>
+                            <label style={s.label}>Month</label>
+                            <select name="month" defaultValue={m.month} style={s.input}>
+                              {MONTHS.map(mo => <option key={mo}>{mo}</option>)}
+                            </select>
+                          </div>
+                          <div style={s.grid2}>
+                            <div style={s.fieldGroup}>
+                              <label style={s.label}>Day</label>
+                              <input name="day" type="number" min={1} max={31} defaultValue={m.day} style={s.input} />
+                            </div>
+                            <div style={s.fieldGroup}>
+                              <label style={s.label}>Year</label>
+                              <input name="year" type="number" min={2024} max={2040} defaultValue={m.year} style={s.input} />
+                            </div>
+                          </div>
+                        </div>
+                        <div style={s.fieldGroup}>
+                          <label style={s.label}>Time</label>
+                          <input name="time" defaultValue={m.time} style={s.input} />
+                        </div>
+                        <div style={s.fieldGroup}>
+                          <label style={s.label}>Location (full)</label>
+                          <textarea name="location" defaultValue={m.location} rows={2} style={{ ...s.input, resize: 'vertical' }} />
+                        </div>
+                        <div style={s.fieldGroup}>
+                          <label style={s.label}>Location (short)</label>
+                          <input name="locationShort" defaultValue={m.locationShort} style={s.input} />
+                        </div>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer', marginBottom: 16 }}>
+                          <input type="checkbox" name="showKarmanos" defaultChecked={m.showKarmanos !== false} />
+                          Show Karmanos venue credit
+                        </label>
+
+                        <div style={s.divider} />
+
                         {/* Topic */}
                         <div style={s.grid2}>
                           <div style={s.fieldGroup}>
