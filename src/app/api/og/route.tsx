@@ -244,7 +244,7 @@ export async function GET(req: NextRequest) {
               {karmanosSrc && meeting.showKarmanos !== false && (
                 /* Zoom: same container-clip technique, shifted up to show Danialle's face */
                 <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.25)', display: 'flex' }}>
-                  <img src={karmanosSrc} style={{ width: 80, marginLeft: -22, marginTop: -10 }} />
+                  <img src={karmanosSrc} style={{ width: 70, marginLeft: -14, marginTop: -8 }} />
                 </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column' }}>
