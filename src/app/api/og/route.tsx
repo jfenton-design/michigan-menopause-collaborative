@@ -159,6 +159,7 @@ export async function GET(req: NextRequest) {
                     <path key={a} d={PETAL_PATH} fill={ACCENT} transform={`rotate(${a})`} />
                   ))}
                   <circle r="30" fill="none" stroke={INK} strokeWidth="1.8" />
+                  <text y="6.5" textAnchor="middle" fontFamily="DM Sans" fontWeight="600" fontSize="19" letterSpacing="-0.5" fill={INK}>MMC</text>
                 </svg>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ display: 'flex', fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4 }}>Michigan Menopause</span>
