@@ -16,18 +16,44 @@ const PETAL_ANGLES = [0, 60, 120, 180, 240, 300];
 // Cache fonts across warm requests — WOFF format (Satori rejects WOFF2)
 let _reg: ArrayBuffer | null = null;
 let _bold: ArrayBuffer | null = null;
+let _med: ArrayBuffer | null = null;
 
 function toAB(buf: Buffer): ArrayBuffer {
-  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+  // Safely extract just this buffer's portion of the underlying ArrayBuffer pool
+  const ab = new ArrayBuffer(buf.length);
+  new Uint8Array(ab).set(buf);
+  return ab;
 }
 
-let _med: ArrayBuffer | null = null;
+async function fetchFont(url: string): Promise<ArrayBuffer> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Font fetch failed: ${url} → ${res.status}`);
+  return res.arrayBuffer();
+}
+
+const JSDELIVR = 'https://cdn.jsdelivr.net/npm/@fontsource/dm-sans@5.1.1/files';
 
 async function loadFonts() {
   if (!_reg || !_bold || !_med) {
-    _reg = toAB(readFileSync(join(process.cwd(), 'public/fonts/DMSans-Regular.woff')));
-    _med = toAB(readFileSync(join(process.cwd(), 'public/fonts/DMSans-Medium.woff')));
-    _bold = toAB(readFileSync(join(process.cwd(), 'public/fonts/DMSans-Bold.woff')));
+    const cwd = process.cwd();
+    const regPath  = join(cwd, 'public/fonts/DMSans-Regular.woff');
+    const medPath  = join(cwd, 'public/fonts/DMSans-Medium.woff');
+    const boldPath = join(cwd, 'public/fonts/DMSans-Bold.woff');
+    const hasLocal = existsSync(regPath) && existsSync(medPath) && existsSync(boldPath);
+    console.log(`[og] fonts cwd=${cwd} hasLocal=${hasLocal}`);
+    if (hasLocal) {
+      _reg  = toAB(readFileSync(regPath));
+      _med  = toAB(readFileSync(medPath));
+      _bold = toAB(readFileSync(boldPath));
+    } else {
+      // CDN fallback — fonts committed to git but not reachable via fs (shouldn't happen)
+      console.warn('[og] falling back to CDN fonts');
+      [_reg, _med, _bold] = await Promise.all([
+        fetchFont(`${JSDELIVR}/dm-sans-latin-400-normal.woff`),
+        fetchFont(`${JSDELIVR}/dm-sans-latin-500-normal.woff`),
+        fetchFont(`${JSDELIVR}/dm-sans-latin-700-normal.woff`),
+      ]);
+    }
   }
   return { reg: _reg!, med: _med!, bold: _bold! };
 }
