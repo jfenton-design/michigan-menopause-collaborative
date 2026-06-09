@@ -8,18 +8,28 @@ import { join } from 'path';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Cache fonts across warm requests — loaded from public/fonts/ (Node.js fs, WOFF format; Satori supports WOFF but not WOFF2)
+const PETAL_PATH =
+  'M 0 -56 C 6 -52 9 -44 8 -39 C 7 -35 4 -32 0 -32 ' +
+  'C -4 -32 -7 -35 -8 -39 C -9 -44 -6 -52 0 -56 Z';
+const PETAL_ANGLES = [0, 60, 120, 180, 240, 300];
+
+// Cache fonts across warm requests — WOFF format (Satori rejects WOFF2)
 let _reg: ArrayBuffer | null = null;
 let _bold: ArrayBuffer | null = null;
 
+function toAB(buf: Buffer): ArrayBuffer {
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+}
+
+let _med: ArrayBuffer | null = null;
+
 async function loadFonts() {
-  if (!_reg || !_bold) {
-    const regBuf = readFileSync(join(process.cwd(), 'public/fonts/Inter-Regular.woff'));
-    const boldBuf = readFileSync(join(process.cwd(), 'public/fonts/Inter-Bold.woff'));
-    _reg = regBuf.buffer.slice(regBuf.byteOffset, regBuf.byteOffset + regBuf.byteLength) as ArrayBuffer;
-    _bold = boldBuf.buffer.slice(boldBuf.byteOffset, boldBuf.byteOffset + boldBuf.byteLength) as ArrayBuffer;
+  if (!_reg || !_bold || !_med) {
+    _reg = toAB(readFileSync(join(process.cwd(), 'public/fonts/DMSans-Regular.woff')));
+    _med = toAB(readFileSync(join(process.cwd(), 'public/fonts/DMSans-Medium.woff')));
+    _bold = toAB(readFileSync(join(process.cwd(), 'public/fonts/DMSans-Bold.woff')));
   }
-  return { reg: _reg!, bold: _bold! };
+  return { reg: _reg!, med: _med!, bold: _bold! };
 }
 
 function toDataImg(buf: Buffer, mime = 'image/png') {
@@ -42,7 +52,7 @@ export async function GET(req: NextRequest) {
   if (!meeting) return new Response('Meeting not found', { status: 404 });
 
   // Load fonts
-  const { reg, bold } = await loadFonts();
+  const { reg, med, bold } = await loadFonts();
 
   // Speaker photo → base64 data URL (from private blob)
   let speakerSrc: string | null = null;
@@ -96,10 +106,20 @@ export async function GET(req: NextRequest) {
 
   return new ImageResponse(
     (
-      <div style={{ width: 1080, height: 1080, display: 'flex', flexDirection: 'column', fontFamily: 'Inter' }}>
+      <div style={{ width: 1080, height: 1080, display: 'flex', flexDirection: 'column', fontFamily: 'DM Sans' }}>
 
         {/* ── UPPER LIGHT SECTION ── */}
-        <div style={{ background: PAPER, display: 'flex', flexDirection: 'column', flex: 1, padding: '56px 72px 48px' }}>
+        <div style={{ background: PAPER, display: 'flex', flexDirection: 'column', flex: 1, padding: '56px 72px 48px', position: 'relative' }}>
+
+          {/* WATERMARK — large faded BloomMark, petals + circle, no text */}
+          <div style={{ position: 'absolute', right: -140, bottom: -140, display: 'flex', opacity: 0.08 }}>
+            <svg width="820" height="820" viewBox="-65 -65 130 130">
+              {PETAL_ANGLES.map(a => (
+                <path key={a} d={PETAL_PATH} fill={ACCENT} transform={`rotate(${a})`} />
+              ))}
+              <circle r="30" fill="none" stroke={ACCENT} strokeWidth="1.5" />
+            </svg>
+          </div>
 
           {/* HEADER: big mark + name + quarter */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 52 }}>
@@ -108,8 +128,8 @@ export async function GET(req: NextRequest) {
                 <img src={logoSrc} width={88} height={88} style={{ flexShrink: 0 }} />
               )}
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ display: 'flex', fontSize: 19, fontWeight: 700, letterSpacing: '0.06em', color: INK, lineHeight: 1.4 }}>MICHIGAN MENOPAUSE</span>
-                <span style={{ display: 'flex', fontSize: 19, fontWeight: 700, letterSpacing: '0.06em', color: INK, lineHeight: 1.4 }}>COLLABORATIVE</span>
+                <span style={{ display: 'flex', fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4 }}>Michigan Menopause</span>
+                <span style={{ display: 'flex', fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4 }}>Collaborative</span>
               </div>
             </div>
             <div style={{
@@ -120,36 +140,54 @@ export async function GET(req: NextRequest) {
             </div>
           </div>
 
-          {/* EYEBROW */}
-          <span style={{ display: 'flex', fontSize: 12, fontWeight: 700, letterSpacing: '0.22em', color: ACCENT, marginBottom: 20 }}>
-            UPCOMING MEETING
-          </span>
+          {/* TAGLINE */}
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: 31, fontWeight: 700, color: INK, lineHeight: 1.25, marginBottom: 32 }}>
+            <span style={{ display: 'flex' }}>Join the clinicians elevating the care of midlife women</span>
+            <span style={{ display: 'flex' }}>in Southeast Michigan.</span>
+          </div>
 
-          {/* TOPIC — massive */}
-          <span style={{ display: 'flex', fontSize: topicSize, fontWeight: 700, lineHeight: 1.08, color: INK, flex: 1 }}>
-            {topic}
-          </span>
+          {/* UPCOMING MEETING block — centered in remaining space */}
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' }}>
 
-          {/* SPEAKER ROW */}
-          {hasSpeaker && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginTop: 36 }}>
-              {speakerSrc ? (
-                <img src={speakerSrc} style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: `4px solid ${ACCENT}`, flexShrink: 0 }} />
-              ) : (
-                <div style={{
-                  width: 96, height: 96, borderRadius: '50%', flexShrink: 0,
-                  background: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 32, fontWeight: 700, color: 'white',
-                }}>{initials}</div>
-              )}
-              {meeting.topicPresenter && (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ display: 'flex', fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 8 }}>PRESENTING</span>
-                  <span style={{ display: 'flex', fontSize: 28, fontWeight: 700, color: INK }}>{meeting.topicPresenter}</span>
-                </div>
-              )}
-            </div>
-          )}
+            {/* EYEBROW */}
+            <span style={{ display: 'flex', fontSize: 16, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 24 }}>
+              UPCOMING MEETING
+            </span>
+
+            {/* TOPIC — massive */}
+            <span style={{ display: 'flex', fontSize: topicSize, fontWeight: 700, lineHeight: 1.08, color: INK, marginBottom: 32 }}>
+              {topic}
+            </span>
+
+            {/* SPEAKER — directly under title */}
+            {hasSpeaker && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                {speakerSrc ? (
+                  <img src={speakerSrc} style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center top', border: `3px solid ${ACCENT}`, flexShrink: 0 }} />
+                ) : (
+                  <div style={{
+                    width: 80, height: 80, borderRadius: '50%', flexShrink: 0,
+                    background: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 28, fontWeight: 700, color: 'white',
+                  }}>{initials}</div>
+                )}
+                {meeting.topicPresenter && (
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ display: 'flex', fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 6 }}>PRESENTING</span>
+                    <span style={{ display: 'flex', fontSize: 26, fontWeight: 700, color: INK }}>{meeting.topicPresenter}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+
+          {/* LEARN MORE — bottom right above dark strip */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+            <span style={{ display: 'flex', fontSize: 22, fontWeight: 700, color: ACCENT }}>
+              michiganmenopause.com
+            </span>
+          </div>
 
         </div>
 
@@ -161,19 +199,21 @@ export async function GET(req: NextRequest) {
           {/* Date + time */}
           <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
             <span style={{ display: 'flex', fontSize: 28, fontWeight: 700, color: 'white', marginBottom: 6 }}>{dateStr}</span>
-            <span style={{ display: 'flex', fontSize: 18, color: 'rgba(255,255,255,0.55)' }}>{meeting.time}</span>
+            <span style={{ display: 'flex', fontSize: 20, color: 'white' }}>{meeting.time}</span>
           </div>
           {/* Vertical rule */}
           <div style={{ width: 1, height: 64, background: 'rgba(255,255,255,0.18)', flexShrink: 0, marginRight: 48, marginLeft: 0 }} />
           {/* Location + karmanos */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
             {karmanosSrc && meeting.showKarmanos !== false && (
-              <img src={karmanosSrc} style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.25)', flexShrink: 0 }} />
+              <img src={karmanosSrc} style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center top', border: '2px solid rgba(255,255,255,0.25)', flexShrink: 0 }} />
             )}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ display: 'flex', fontSize: 22, fontWeight: 700, color: 'white', marginBottom: 4 }}>{meeting.locationShort}</span>
+              {meeting.location.split('\n').map((line: string, i: number) => (
+                <span key={i} style={{ display: 'flex', fontSize: i === 0 ? 22 : 18, fontWeight: i === 0 ? 700 : 400, color: 'white', marginBottom: i === 0 ? 5 : 0 }}>{line}</span>
+              ))}
               {meeting.showKarmanos !== false && (
-                <span style={{ display: 'flex', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>Hosted by Danialle Karmanos</span>
+                <span style={{ display: 'flex', fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 8 }}>Thanks to Danialle Karmanos for donating the use of her space for our gathering!</span>
               )}
             </div>
           </div>
@@ -185,8 +225,9 @@ export async function GET(req: NextRequest) {
       width: 1080,
       height: 1080,
       fonts: [
-        { name: 'Inter', data: reg, weight: 400, style: 'normal' },
-        { name: 'Inter', data: bold, weight: 700, style: 'normal' },
+        { name: 'DM Sans', data: reg, weight: 400, style: 'normal' },
+        { name: 'DM Sans', data: med, weight: 500, style: 'normal' },
+        { name: 'DM Sans', data: bold, weight: 700, style: 'normal' },
       ],
     }
   );
