@@ -8,11 +8,6 @@ import { join } from 'path';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const PETAL_PATH =
-  'M 0 -56 C 6 -52 9 -44 8 -39 C 7 -35 4 -32 0 -32 ' +
-  'C -4 -32 -7 -35 -8 -39 C -9 -44 -6 -52 0 -56 Z';
-const PETAL_ANGLES = [0, 60, 120, 180, 240, 300];
-
 // Cache fonts across warm requests — loaded from public/fonts/ (Node.js fs, WOFF format; Satori supports WOFF but not WOFF2)
 let _reg: ArrayBuffer | null = null;
 let _bold: ArrayBuffer | null = null;
@@ -71,11 +66,17 @@ export async function GET(req: NextRequest) {
     } catch { /* ignore */ }
   }
 
+  // MMC logo PNG (pre-rendered from icon.svg so Satori gets a real image)
+  let logoSrc: string | null = null;
+  try {
+    const p = join(process.cwd(), 'public/assets/mmc-logo.png');
+    if (existsSync(p)) logoSrc = toDataImg(readFileSync(p));
+  } catch { /* ignore */ }
+
   const topic = meeting.topic ?? `${meeting.quarter} Meeting`;
-  const topicSize = topic.length > 80 ? 42 : topic.length > 60 ? 50 : topic.length > 40 ? 58 : 68;
+  const topicSize = topic.length > 90 ? 52 : topic.length > 65 ? 62 : topic.length > 45 ? 74 : 88;
   const hasSpeaker = !!(speakerSrc || meeting.topicPresenter);
 
-  // Initials fallback for speaker avatar
   const initials = (meeting.topicPresenter ?? '')
     .replace(/^Dr\.?\s*/i, '')
     .split(' ')
@@ -85,169 +86,96 @@ export async function GET(req: NextRequest) {
     .toUpperCase();
 
   const dateStr = meeting.day !== '—'
-    ? `${meeting.weekday !== 'Date TBD' ? meeting.weekday + ', ' : ''}${meeting.month} ${meeting.day}, ${meeting.year}`
-    : `${meeting.year} — Date TBD`;
+    ? `${meeting.weekday !== 'Date TBD' ? meeting.weekday + ', ' : ''}${meeting.month} ${meeting.day}`
+    : 'Date TBD';
+
+  // Brand tokens
+  const INK    = '#1F1535';
+  const ACCENT = '#6D3BE4';
+  const PAPER  = '#F6F2EB';
 
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: 1080,
-          height: 1080,
-          background: '#1F1535',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '64px 72px',
-          fontFamily: 'Inter',
-          color: 'white',
-        }}
-      >
+      <div style={{ width: 1080, height: 1080, display: 'flex', flexDirection: 'column', fontFamily: 'Inter' }}>
 
-        {/* ── HEADER: logo + quarter badge ── */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 36 }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {/* BloomMark at 72px — "MMC" overlaid as HTML (Satori doesn't support SVG <text>) */}
-            <div style={{ position: 'relative', width: 72, height: 72, marginRight: 20, flexShrink: 0, display: 'flex' }}>
-              <svg width="72" height="72" viewBox="-65 -65 130 130">
-                {PETAL_ANGLES.map(a => (
-                  <path key={a} d={PETAL_PATH} fill="#9B6FFF" transform={`rotate(${a})`} />
-                ))}
-                <circle r="30" fill="none" stroke="white" strokeWidth="1.8" />
-              </svg>
-              <div style={{
-                position: 'absolute',
-                top: 0, left: 0, width: '100%', height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 16,
-                fontWeight: 700,
-                color: 'white',
-                letterSpacing: '-0.5px',
-              }}>
-                MMC
+        {/* ── UPPER LIGHT SECTION ── */}
+        <div style={{ background: PAPER, display: 'flex', flexDirection: 'column', flex: 1, padding: '56px 72px 48px' }}>
+
+          {/* HEADER: big mark + name + quarter */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 52 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+              {logoSrc && (
+                <img src={logoSrc} width={88} height={88} style={{ flexShrink: 0 }} />
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ display: 'flex', fontSize: 19, fontWeight: 700, letterSpacing: '0.06em', color: INK, lineHeight: 1.4 }}>MICHIGAN MENOPAUSE</span>
+                <span style={{ display: 'flex', fontSize: 19, fontWeight: 700, letterSpacing: '0.06em', color: INK, lineHeight: 1.4 }}>COLLABORATIVE</span>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ display: 'flex', fontSize: 15, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>
-                MICHIGAN MENOPAUSE
-              </span>
-              <span style={{ display: 'flex', fontSize: 15, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>
-                COLLABORATIVE
-              </span>
+            <div style={{
+              background: ACCENT, borderRadius: 8, padding: '10px 24px',
+              fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', color: 'white', display: 'flex',
+            }}>
+              {meeting.quarter.toUpperCase()}
             </div>
           </div>
-          <div
-            style={{
-              background: 'rgba(155,111,255,0.18)',
-              border: '1.5px solid rgba(155,111,255,0.45)',
-              borderRadius: 100,
-              padding: '10px 24px',
-              fontSize: 13,
-              fontWeight: 700,
-              letterSpacing: '0.09em',
-              color: '#B491FF',
-              display: 'flex',
-            }}
-          >
-            {meeting.quarter.toUpperCase()}
-          </div>
-        </div>
 
-        {/* Hairline */}
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', marginBottom: 52 }} />
-
-        {/* ── TOPIC + DATE ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-          <span style={{ display: 'flex', fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: 'rgba(155,111,255,0.85)', marginBottom: 20 }}>
+          {/* EYEBROW */}
+          <span style={{ display: 'flex', fontSize: 12, fontWeight: 700, letterSpacing: '0.22em', color: ACCENT, marginBottom: 20 }}>
             UPCOMING MEETING
           </span>
-          <span style={{ display: 'flex', fontSize: topicSize, fontWeight: 700, lineHeight: 1.15, color: 'white', marginBottom: 32 }}>
+
+          {/* TOPIC — massive */}
+          <span style={{ display: 'flex', fontSize: topicSize, fontWeight: 700, lineHeight: 1.08, color: INK, flex: 1 }}>
             {topic}
           </span>
-          <span style={{ display: 'flex', fontSize: 20, color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>
-            {dateStr}
-          </span>
-          <span style={{ display: 'flex', fontSize: 20, color: 'rgba(255,255,255,0.6)' }}>
-            {meeting.time}
-          </span>
+
+          {/* SPEAKER ROW */}
+          {hasSpeaker && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginTop: 36 }}>
+              {speakerSrc ? (
+                <img src={speakerSrc} style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: `4px solid ${ACCENT}`, flexShrink: 0 }} />
+              ) : (
+                <div style={{
+                  width: 96, height: 96, borderRadius: '50%', flexShrink: 0,
+                  background: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 32, fontWeight: 700, color: 'white',
+                }}>{initials}</div>
+              )}
+              {meeting.topicPresenter && (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ display: 'flex', fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 8 }}>PRESENTING</span>
+                  <span style={{ display: 'flex', fontSize: 28, fontWeight: 700, color: INK }}>{meeting.topicPresenter}</span>
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
-        {/* ── SPEAKER (horizontal row) ── */}
-        {hasSpeaker && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginTop: 44, marginBottom: 44 }}>
-            {speakerSrc ? (
-              <img
-                src={speakerSrc}
-                style={{
-                  width: 88,
-                  height: 88,
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  border: '3px solid rgba(155,111,255,0.5)',
-                  flexShrink: 0,
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 88,
-                  height: 88,
-                  borderRadius: '50%',
-                  background: 'rgba(155,111,255,0.14)',
-                  border: '3px solid rgba(155,111,255,0.38)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 30,
-                  fontWeight: 700,
-                  color: '#9B6FFF',
-                  flexShrink: 0,
-                }}
-              >
-                {initials}
-              </div>
-            )}
-            {meeting.topicPresenter && (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ display: 'flex', fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>
-                  PRESENTING
-                </span>
-                <span style={{ display: 'flex', fontSize: 24, fontWeight: 700, color: 'white' }}>
-                  {meeting.topicPresenter}
-                </span>
-              </div>
-            )}
+        {/* ── DARK BOTTOM BAND — date / location / karmanos ── */}
+        <div style={{
+          background: INK, display: 'flex', alignItems: 'center',
+          padding: '32px 72px', gap: 0,
+        }}>
+          {/* Date + time */}
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <span style={{ display: 'flex', fontSize: 28, fontWeight: 700, color: 'white', marginBottom: 6 }}>{dateStr}</span>
+            <span style={{ display: 'flex', fontSize: 18, color: 'rgba(255,255,255,0.55)' }}>{meeting.time}</span>
           </div>
-        )}
-
-        {/* Hairline */}
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', marginBottom: 28 }} />
-
-        {/* ── FOOTER: Karmanos photo LEFT of location text ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          {karmanosSrc && meeting.showKarmanos !== false && (
-            <img
-              src={karmanosSrc}
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                objectFit: 'cover',
-                border: '2px solid rgba(255,255,255,0.18)',
-                flexShrink: 0,
-              }}
-            />
-          )}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ display: 'flex', fontSize: 17, fontWeight: 600, color: 'rgba(255,255,255,0.85)', marginBottom: 5 }}>
-              {meeting.locationShort}
-            </span>
-            {meeting.showKarmanos !== false && (
-              <span style={{ display: 'flex', fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>
-                With special thanks to Danialle Karmanos for hosting
-              </span>
+          {/* Vertical rule */}
+          <div style={{ width: 1, height: 64, background: 'rgba(255,255,255,0.18)', flexShrink: 0, marginRight: 48, marginLeft: 0 }} />
+          {/* Location + karmanos */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            {karmanosSrc && meeting.showKarmanos !== false && (
+              <img src={karmanosSrc} style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.25)', flexShrink: 0 }} />
             )}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ display: 'flex', fontSize: 22, fontWeight: 700, color: 'white', marginBottom: 4 }}>{meeting.locationShort}</span>
+              {meeting.showKarmanos !== false && (
+                <span style={{ display: 'flex', fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>Hosted by Danialle Karmanos</span>
+              )}
+            </div>
           </div>
         </div>
 
