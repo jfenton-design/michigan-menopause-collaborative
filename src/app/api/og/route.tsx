@@ -92,12 +92,21 @@ export async function GET(req: NextRequest) {
     // Load fonts from jsDelivr CDN (WOFF — Satori rejects WOFF2)
     const { reg, med, bold } = await loadFonts();
 
-    // Speaker photo → base64 data URL (direct bearer-auth fetch, no SDK)
+    // Speaker photo → base64 data URL.
+    // Private Vercel Blob URLs need bearer auth + token; public URLs and site-relative
+    // paths (e.g. "/assets/eva-alsheik.png") are fetched directly so they render without
+    // the blob token (works in local dev and prod alike).
     let speakerSrc: string | null = null;
-    if (meeting.speakerPhoto && token) {
+    if (meeting.speakerPhoto) {
       try {
-        const imgRes = await fetchPrivateBlob(meeting.speakerPhoto, token);
-        if (imgRes.ok) {
+        const photoUrl = meeting.speakerPhoto.startsWith('http')
+          ? meeting.speakerPhoto
+          : new URL(meeting.speakerPhoto, req.nextUrl.origin).toString();
+        const isPrivateBlob = photoUrl.startsWith(BLOB_BASE);
+        const imgRes = isPrivateBlob
+          ? (token ? await fetchPrivateBlob(photoUrl, token) : null)
+          : await fetch(photoUrl);
+        if (imgRes && imgRes.ok) {
           const mime = imgRes.headers.get('content-type') ?? 'image/jpeg';
           speakerSrc = toDataImg(await imgRes.arrayBuffer(), mime);
         }
@@ -113,8 +122,8 @@ export async function GET(req: NextRequest) {
       } catch { /* ignore */ }
     }
 
-    const topic = meeting.topic ?? `${meeting.quarter} Meeting`;
-    const topicSize = topic.length > 90 ? 52 : topic.length > 65 ? 62 : topic.length > 45 ? 74 : 88;
+    const topic = meeting.topic ?? '';
+    const cTopicSize = topic.length > 64 ? 30 : topic.length > 44 ? 34 : 40;
     const hasSpeaker = !!(speakerSrc || meeting.topicPresenter);
 
     const initials = (meeting.topicPresenter ?? '')
@@ -128,6 +137,9 @@ export async function GET(req: NextRequest) {
     const dateStr = meeting.day !== '—'
       ? `${meeting.weekday !== 'Date TBD' ? meeting.weekday + ', ' : ''}${meeting.month} ${meeting.day}`
       : 'Date TBD';
+    const dateLine = meeting.day !== '—' ? `${dateStr} · ${meeting.time}` : dateStr;
+    const season = meeting.quarter.split(' ')[0] || meeting.quarter;
+    const eyebrowLabel = `${season} Meeting`.toUpperCase();
 
     // Brand tokens
     const INK    = '#1F1535';
@@ -138,8 +150,8 @@ export async function GET(req: NextRequest) {
       (
         <div style={{ width: 1080, height: 1080, display: 'flex', flexDirection: 'column', fontFamily: 'DM Sans' }}>
 
-          {/* ── UPPER LIGHT SECTION ── */}
-          <div style={{ background: PAPER, display: 'flex', flexDirection: 'column', flex: 1, padding: '56px 72px 48px', position: 'relative' }}>
+          {/* ── UPPER LIGHT SECTION (Option C) ── */}
+          <div style={{ background: PAPER, display: 'flex', flexDirection: 'column', flex: 1, padding: '64px 64px 0', position: 'relative' }}>
 
             {/* WATERMARK — large faded BloomMark, petals + circle, no text */}
             <div style={{ position: 'absolute', right: -140, bottom: -140, display: 'flex', opacity: 0.08 }}>
@@ -151,54 +163,49 @@ export async function GET(req: NextRequest) {
               </svg>
             </div>
 
-            {/* HEADER: big mark + name + quarter */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 52 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                {/* Logo: SVG bloom mark + HTML text overlay (SVG <text> unreliable in Satori) */}
-                <div style={{ position: 'relative', width: 88, height: 88, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="88" height="88" viewBox="-65 -65 130 130" style={{ position: 'absolute', top: 0, left: 0, display: 'flex' }}>
-                    {PETAL_ANGLES.map(a => (
-                      <g key={a} transform={`rotate(${a})`}>
-                        <path d={PETAL_PATH} fill={ACCENT} />
-                      </g>
-                    ))}
-                    <circle r="30" fill="none" stroke={INK} strokeWidth="1.8" />
-                  </svg>
-                  <span style={{ display: 'flex', position: 'relative', fontSize: 13, fontWeight: 700, color: INK, letterSpacing: '-0.02em' }}>MMC</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ display: 'flex', fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4 }}>Michigan Menopause</span>
-                  <span style={{ display: 'flex', fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', color: INK, lineHeight: 1.4 }}>Collaborative</span>
-                </div>
+            {/* BIG HORIZONTAL LOCKUP — mark + wordmark, upper-left */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 34, marginBottom: 48 }}>
+              <div style={{ position: 'relative', width: 204, height: 204, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="204" height="204" viewBox="-65 -65 130 130" style={{ position: 'absolute', top: 0, left: 0, display: 'flex' }}>
+                  {PETAL_ANGLES.map(a => (
+                    <g key={a} transform={`rotate(${a})`}>
+                      <path d={PETAL_PATH} fill={ACCENT} />
+                    </g>
+                  ))}
+                  <circle r="30" fill="none" stroke={INK} strokeWidth="1.8" />
+                </svg>
+                <span style={{ display: 'flex', position: 'relative', fontSize: 29, fontWeight: 700, color: INK, letterSpacing: '-0.02em' }}>MMC</span>
               </div>
-              <div style={{
-                background: ACCENT, borderRadius: 8, padding: '10px 24px',
-                fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', color: 'white', display: 'flex',
-              }}>
-                {meeting.quarter.toUpperCase()}
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ display: 'flex', fontSize: 56, fontWeight: 500, letterSpacing: '-0.02em', color: INK, lineHeight: 1.04 }}>Michigan Menopause</span>
+                <span style={{ display: 'flex', fontSize: 56, fontWeight: 500, letterSpacing: '-0.02em', color: INK, lineHeight: 1.04 }}>Collaborative</span>
               </div>
             </div>
 
-            {/* TAGLINE */}
-            <div style={{ display: 'flex', flexDirection: 'column', fontSize: 31, fontWeight: 700, color: INK, lineHeight: 1.25, marginBottom: 32 }}>
-              <span style={{ display: 'flex' }}>Join the clinicians elevating the care of midlife women</span>
-              <span style={{ display: 'flex' }}>in Southeast Michigan.</span>
+            {/* MISSION TAGLINE */}
+            <div style={{ display: 'flex', flexDirection: 'column', fontSize: 32, fontWeight: 700, color: INK, lineHeight: 1.3 }}>
+              <span style={{ display: 'flex' }}>Join the clinicians elevating the care</span>
+              <span style={{ display: 'flex' }}>of midlife women in Southeast Michigan.</span>
             </div>
 
-            {/* UPCOMING MEETING block — centered in remaining space */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center' }}>
+            {/* MEET BLOCK — date / topic / speaker, stacked top-down */}
+            <div style={{ display: 'flex', flexDirection: 'column', marginTop: 52 }}>
 
-              {/* EYEBROW */}
-              <span style={{ display: 'flex', fontSize: 16, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 24 }}>
-                UPCOMING MEETING
-              </span>
+              {/* SUMMER MEETING + date */}
+              <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 34 }}>
+                <span style={{ display: 'flex', fontSize: 15, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 14 }}>{eyebrowLabel}</span>
+                <span style={{ display: 'flex', fontSize: 34, fontWeight: 700, color: INK }}>{dateLine}</span>
+              </div>
 
-              {/* TOPIC — massive */}
-              <span style={{ display: 'flex', fontSize: topicSize, fontWeight: 700, lineHeight: 1.08, color: INK, marginBottom: 32 }}>
-                {topic}
-              </span>
+              {/* FEATURED TOPIC */}
+              {meeting.topic && (
+                <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 36 }}>
+                  <span style={{ display: 'flex', fontSize: 15, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 14 }}>FEATURED TOPIC</span>
+                  <span style={{ display: 'flex', fontSize: cTopicSize, fontWeight: 700, lineHeight: 1.12, color: INK }}>{topic}</span>
+                </div>
+              )}
 
-              {/* SPEAKER — directly under title */}
+              {/* PRESENTING — speaker */}
               {hasSpeaker && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                   {speakerSrc ? (
@@ -222,25 +229,16 @@ export async function GET(req: NextRequest) {
               )}
 
             </div>
-
-            {/* LEARN MORE — bottom right above dark strip */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
-              <span style={{ display: 'flex', fontSize: 22, fontWeight: 700, color: ACCENT }}>
-                michiganmenopause.com
-              </span>
-            </div>
-
           </div>
 
-          {/* ── DARK BOTTOM BAND — date / location / karmanos ── */}
+          {/* ── DARK BOTTOM BAND — url / location / karmanos ── */}
           <div style={{
             background: INK, display: 'flex', alignItems: 'center',
-            padding: '32px 72px', gap: 0,
+            padding: '32px 72px',
           }}>
-            {/* Date + time */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-              <span style={{ display: 'flex', fontSize: 28, fontWeight: 700, color: 'white', marginBottom: 6 }}>{dateStr}</span>
-              <span style={{ display: 'flex', fontSize: 20, color: 'white' }}>{meeting.time}</span>
+            {/* URL */}
+            <div style={{ display: 'flex', flex: 1 }}>
+              <span style={{ display: 'flex', fontSize: 24, fontWeight: 700, color: 'white' }}>michiganmenopause.com</span>
             </div>
             {/* Vertical rule */}
             <div style={{ width: 1, height: 64, background: 'rgba(255,255,255,0.18)', flexShrink: 0, marginRight: 48, marginLeft: 0 }} />

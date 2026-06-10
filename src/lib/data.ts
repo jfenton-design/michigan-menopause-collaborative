@@ -35,8 +35,9 @@ export const NEXT_MEETING: Meeting = {
   location: "Danialle's Clubhouse\n235 Pierce Street, Birmingham, MI",
   locationShort: "Danialle's Clubhouse · Birmingham",
   rsvpOpen: true,
-  topic: "Gastrointestinal disorders in midlife women",
+  topic: "Gastrointestinal Disorders in Midlife Women",
   topicPresenter: "Dr. Eva Alsheik",
+  speakerPhoto: "/assets/eva-alsheik.png",
 };
 
 export const UPCOMING_MEETINGS: Meeting[] = [
