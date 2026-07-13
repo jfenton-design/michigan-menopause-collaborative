@@ -9,7 +9,6 @@ const PAPER = '#F7F4FB';
 const PAPER_2 = '#E8DEF7';
 const INK_SOFT = '#7A6E96';
 const LOGO_URL = 'https://michiganmenopause.com/assets/mmc-logo.png';
-const RSVP_URL = 'https://michiganmenopause.com/rsvp';
 
 function articlePdfUrl(m: Meeting): string | null {
   if (!m.articleUrl) return null;
@@ -31,10 +30,9 @@ function buildEmailHtml(args: {
   subject: string;
   intro: string;
   meeting: Meeting;
-  includeRsvp: boolean;
   includeArticle: boolean;
 }): string {
-  const { subject, intro, meeting: m, includeRsvp, includeArticle } = args;
+  const { subject, intro, meeting: m, includeArticle } = args;
   const dateStr = `${m.weekday}, ${m.month} ${m.day}, ${m.year}`;
   const locationHtml = m.location.split('\n').join('<br>');
   const introHtml = intro.split('\n').join('<br>');
@@ -45,12 +43,6 @@ function buildEmailHtml(args: {
         <td style="padding:8px 14px 8px 0;color:${INK_SOFT};font-size:13px;white-space:nowrap;vertical-align:top;font-family:Arial,Helvetica,sans-serif">Topic</td>
         <td style="padding:8px 0;font-size:14px;color:${NAVY};font-family:Arial,Helvetica,sans-serif">${m.topic}${m.topicPresenter ? ` — ${m.topicPresenter}` : ''}</td>
       </tr>`
-    : '';
-
-  const rsvpButton = includeRsvp
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:26px"><tr><td>
-        <a href="${RSVP_URL}" style="display:inline-block;background:${ACCENT};color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;padding:12px 26px;border-radius:8px">RSVP for this meeting &rarr;</a>
-      </td></tr></table>`
     : '';
 
   const articleSection =
@@ -102,7 +94,6 @@ function buildEmailHtml(args: {
           ${topicRow}
         </table>
         ${articleSection}
-        ${rsvpButton}
       </td>
     </tr>
     <tr>
@@ -118,10 +109,9 @@ function buildPlainText(args: {
   subject: string;
   intro: string;
   meeting: Meeting;
-  includeRsvp: boolean;
   includeArticle: boolean;
 }): string {
-  const { intro, meeting: m, includeRsvp, includeArticle } = args;
+  const { intro, meeting: m, includeArticle } = args;
   const dateStr = `${m.weekday}, ${m.month} ${m.day}, ${m.year}`;
   const pdfUrl = articlePdfUrl(m);
   return [
@@ -133,8 +123,6 @@ function buildPlainText(args: {
     m.topic ? `Topic: ${m.topic}${m.topicPresenter ? ` — ${m.topicPresenter}` : ''}` : '',
     includeArticle && m.articleTitle ? `Discussion article: ${m.articleTitle}` : '',
     includeArticle && pdfUrl ? `Download: ${pdfUrl}` : '',
-    '',
-    includeRsvp ? `RSVP: ${RSVP_URL}` : '',
     '',
     'Michigan Menopause Collaborative · michiganmenopause.com',
   ]
@@ -148,7 +136,6 @@ export function EmailTemplateBuilder({ meetings }: { meetings: Meeting[] }) {
   const [meetingId, setMeetingId] = React.useState(initialMeeting?.id ?? '');
   const [subject, setSubject] = React.useState(initialMeeting ? defaultSubject(initialMeeting) : '');
   const [intro, setIntro] = React.useState(initialMeeting ? defaultIntro(initialMeeting) : '');
-  const [includeRsvp, setIncludeRsvp] = React.useState(initialMeeting?.rsvpOpen ?? true);
   const [includeArticle, setIncludeArticle] = React.useState(!!initialMeeting?.articleUrl);
   const [copyStatus, setCopyStatus] = React.useState<'idle' | 'copied' | 'failed'>('idle');
   const [subjectCopyStatus, setSubjectCopyStatus] = React.useState<'idle' | 'copied'>('idle');
@@ -163,13 +150,12 @@ export function EmailTemplateBuilder({ meetings }: { meetings: Meeting[] }) {
     if (m) {
       setSubject(defaultSubject(m));
       setIntro(defaultIntro(m));
-      setIncludeRsvp(m.rsvpOpen ?? true);
       setIncludeArticle(!!m.articleUrl);
     }
   }
 
-  const html = meeting ? buildEmailHtml({ subject, intro, meeting, includeRsvp, includeArticle }) : '';
-  const text = meeting ? buildPlainText({ subject, intro, meeting, includeRsvp, includeArticle }) : '';
+  const html = meeting ? buildEmailHtml({ subject, intro, meeting, includeArticle }) : '';
+  const text = meeting ? buildPlainText({ subject, intro, meeting, includeArticle }) : '';
   const pdfUrl = meeting ? articlePdfUrl(meeting) : null;
 
   async function handleCopy() {
@@ -251,7 +237,7 @@ export function EmailTemplateBuilder({ meetings }: { meetings: Meeting[] }) {
   };
 
   if (!meeting) {
-    return <p style={{ color: '#7a6e8a', fontSize: 14 }}>Add a meeting first to build an invite email.</p>;
+    return <p style={{ color: '#7a6e8a', fontSize: 14 }}>Add a meeting first to build a reminder email.</p>;
   }
 
   return (
@@ -300,11 +286,6 @@ export function EmailTemplateBuilder({ meetings }: { meetings: Meeting[] }) {
           style={{ ...input, resize: 'vertical' }}
         />
       </div>
-
-      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer', marginBottom: 12 }}>
-        <input type="checkbox" checked={includeRsvp} onChange={e => setIncludeRsvp(e.target.checked)} />
-        Include RSVP button
-      </label>
 
       {meeting.articleTitle && (
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer', marginBottom: 20 }}>
