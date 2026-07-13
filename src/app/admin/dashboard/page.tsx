@@ -601,9 +601,9 @@ export default async function DashboardPage({
 
         {/* ── EMAIL TEMPLATE ── */}
         <div id="email" style={s.card}>
-          <h2 style={s.sectionTitle}>Meeting Invite Email</h2>
+          <h2 style={s.sectionTitle}>Meeting Reminder Email</h2>
           <p style={{ fontSize: 14, color: '#7a6e8a', marginTop: -12, marginBottom: 20 }}>
-            Build a branded invite for an upcoming meeting, then copy it straight into a Gmail compose window.
+            Build a branded reminder for an upcoming meeting, then copy it straight into a Gmail compose window.
           </p>
           <EmailTemplateBuilder meetings={meetings} />
         </div>
