@@ -2,6 +2,7 @@ import * as React from 'react';
 import { BloomMark } from '@/components/Logo';
 import { getResources, getMeetings, getMembers, getContent } from '@/lib/admin-db';
 import { SPECIALTIES } from '@/lib/data';
+import { EmailTemplateBuilder } from './EmailTemplateBuilder';
 import {
   logout,
   uploadResource,
@@ -146,6 +147,7 @@ export default async function DashboardPage({
           { label: 'Resources', href: '#resources' },
           { label: 'Meetings',  href: '#meetings' },
           { label: 'Members',   href: '#members' },
+          { label: 'Email',     href: '#email' },
           { label: 'Content',   href: '#content' },
         ].map(({ label, href }) => (
           <a
@@ -595,6 +597,15 @@ export default async function DashboardPage({
               </div>
             </>
           )}
+        </div>
+
+        {/* ── EMAIL TEMPLATE ── */}
+        <div id="email" style={s.card}>
+          <h2 style={s.sectionTitle}>Meeting Invite Email</h2>
+          <p style={{ fontSize: 14, color: '#7a6e8a', marginTop: -12, marginBottom: 20 }}>
+            Build a branded invite for an upcoming meeting, then copy it straight into a Gmail compose window.
+          </p>
+          <EmailTemplateBuilder meetings={meetings} />
         </div>
 
         {/* ── SITE CONTENT ── */}
