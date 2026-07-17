@@ -10,7 +10,7 @@ function blobUrl(pathname: string): string {
   return `${BLOB_BASE}/${pathname}`;
 }
 
-async function readData<T>(pathname: string, fallback: T): Promise<T> {
+export async function readData<T>(pathname: string, fallback: T): Promise<T> {
   const url = blobUrl(pathname);
   try {
     const info = await head(url);
@@ -31,7 +31,7 @@ async function readData<T>(pathname: string, fallback: T): Promise<T> {
   return fallback;
 }
 
-async function writeData(pathname: string, data: unknown): Promise<void> {
+export async function writeData(pathname: string, data: unknown): Promise<void> {
   const result = await put(pathname, JSON.stringify(data), {
     access: 'private',
     contentType: 'application/json',

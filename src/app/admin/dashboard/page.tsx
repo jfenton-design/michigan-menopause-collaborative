@@ -144,6 +144,7 @@ export default async function DashboardPage({
       {/* Nav strip */}
       <div style={{ background: '#2a1c47', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 40px', display: 'flex', gap: 4 }}>
         {[
+          { label: 'Check-In',  href: '/admin/dashboard/checkin' },
           { label: 'Resources', href: '#resources' },
           { label: 'Meetings',  href: '#meetings' },
           { label: 'Members',   href: '#members' },
