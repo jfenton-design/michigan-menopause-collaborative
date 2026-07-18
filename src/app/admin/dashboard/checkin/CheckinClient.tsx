@@ -406,6 +406,7 @@ function GuestSearchSheet({
             <label>Search the directory first</label>
             <input autoFocus value={query} onChange={e => onQueryChange(e.target.value)} type="search" placeholder="Name, practice, specialty…" />
           </div>
+          <button type="button" className={guestStyles.btnBrandTop} onClick={onNewGuest}>＋ Not listed — register new guest</button>
           <div>
             {matches.length === 0 ? (
               <div className={guestStyles.emptyRow}>No matches — register as a new guest below.</div>
