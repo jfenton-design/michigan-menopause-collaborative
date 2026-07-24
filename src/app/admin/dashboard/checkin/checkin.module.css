@@ -65,6 +65,10 @@
 .eventLoc { color: #7a6e8a; margin: 0 0 10px; white-space: pre-line; font-size: 14px; }
 .eventTopic { margin: 0 0 10px; font-style: italic; font-size: 14px; }
 .eventMeta { margin: 0; font-size: 13px; color: #6D3BE4; font-weight: 600; }
+.eventStats { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; font-size: 13px; color: #5a5168; }
+.eventStats strong { color: #1F1535; font-weight: 700; }
+.eventNoshow strong { color: #c0392b; }
+.eventPending { color: #9a90ac; font-style: italic; }
 .fab { position: fixed; right: 24px; bottom: 24px; z-index: 30; background: #6D3BE4; color: #fff; border: none; border-radius: 999px; padding: 14px 20px; font-size: 15px; font-weight: 600; box-shadow: 0 4px 16px rgba(109,59,228,0.35); cursor: pointer; font-family: inherit; }
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1F1535; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: 500; z-index: 80; box-shadow: 0 4px 20px rgba(0,0,0,.25); font-size: 14px; font-family: inherit; }
 @media (max-width: 640px) {
