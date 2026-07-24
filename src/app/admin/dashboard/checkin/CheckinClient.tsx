@@ -31,13 +31,49 @@ function statusOf(m: CheckinMember, session: string): '' | 'in' | 'noshow' {
   return '';
 }
 function isIn(m: CheckinMember, session: string) { return statusOf(m, session) === 'in'; }
-function isNoShow(m: CheckinMember, session: string) { return statusOf(m, session) === 'noshow'; }
 function rsvpVal(m: CheckinMember, session: string): RsvpValue | undefined { return m.rsvp?.[session]; }
 function rsvpYes(m: CheckinMember, session: string) { return rsvpVal(m, session) === true; }
 function rsvpNo(m: CheckinMember, session: string) { return rsvpVal(m, session) === false; }
 function rsvpMaybe(m: CheckinMember, session: string) { return rsvpVal(m, session) === 'maybe'; }
 function isWalkin(m: CheckinMember, session: string) {
   return isIn(m, session) && !rsvpYes(m, session) && !rsvpMaybe(m, session);
+}
+function isExpected(m: CheckinMember, session: string) {
+  return rsvpYes(m, session) || rsvpMaybe(m, session);
+}
+const MONTH_INDEX: Record<string, number> = {
+  Jan: 0, January: 0, Feb: 1, February: 1, Mar: 2, March: 2, Apr: 3, April: 3, May: 4,
+  Jun: 5, June: 5, Jul: 6, July: 6, Aug: 7, August: 7, Sep: 8, Sept: 8, September: 8,
+  Oct: 9, October: 9, Nov: 10, November: 10, Dec: 11, December: 11,
+};
+/** True once a meeting's day is fully over. Undated/TBD meetings are never "passed". */
+function meetingHasPassed(mt?: Meeting): boolean {
+  if (!mt) return false;
+  const mi = MONTH_INDEX[(mt.month || '').trim()];
+  const day = parseInt(mt.day, 10);
+  const year = parseInt(mt.year, 10);
+  if (mi === undefined || Number.isNaN(day) || Number.isNaN(year)) return false;
+  return new Date(year, mi, day, 23, 59, 59, 999).getTime() < Date.now();
+}
+/** Display status folds an *automatic* no-show into the picture: when a meeting
+ *  is genuinely over, anyone who RSVP'd yes/maybe but never checked in counts as
+ *  a no-show — without Dr. Leff having to mark each one by hand. The caller
+ *  decides when that auto-rule is safe to apply (`noShowActive`): only once the
+ *  date has passed, RSVP is closed, AND at least one person was actually checked
+ *  in (otherwise check-in simply wasn't run and nobody is a "no-show" yet). */
+function displayStatus(m: CheckinMember, session: string, noShowActive: boolean): '' | 'in' | 'noshow' {
+  if (isIn(m, session)) return 'in';
+  if (statusOf(m, session) === 'noshow') return 'noshow';
+  if (noShowActive && isExpected(m, session)) return 'noshow';
+  return '';
+}
+/** Is the automatic no-show rule safe to apply for this meeting? Only once the
+ *  meeting day is over AND at least one person was actually checked in — with no
+ *  check-ins, check-in simply wasn't run and nobody is a "no-show" yet. */
+function noShowActiveFor(mt: Meeting | undefined, roster: CheckinMember[]): boolean {
+  if (!mt) return false;
+  if (!meetingHasPassed(mt)) return false;         // hasn't happened yet
+  return roster.some(m => isIn(m, mt.id));          // check-in was actually used
 }
 function blankMember(id: string): CheckinMember {
   return { id, prefix: '', first: '', last: '', cred: '', mscp: '', ptype: '', spec: '', practice: '', email: '', phone: '', notes: '', consent: '', seasons: {}, rsvp: {}, edited: true };
@@ -114,7 +150,7 @@ function downscaleImage(file: File, maxDim: number): Promise<Blob> {
 export function CheckinClient({ initialMeetings, initialRoster }: { initialMeetings: Meeting[]; initialRoster: CheckinMember[] }) {
   const [roster, setRoster] = React.useState<CheckinMember[]>(initialRoster);
   const [session, setSession] = React.useState<string>(initialMeetings[0]?.id ?? '');
-  const [view, setView] = React.useState<View>('roster');
+  const [view, setView] = React.useState<View>('events');
   const [filter, setFilter] = React.useState<string>('expected');
   const [query, setQuery] = React.useState('');
   const [sheet, setSheet] = React.useState<SheetState>(null);
@@ -124,6 +160,8 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
   const [guestQuery, setGuestQuery] = React.useState('');
 
   const meetings = initialMeetings;
+  const sessionMeeting = meetings.find(mt => mt.id === session);
+  const noShowActive = noShowActiveFor(sessionMeeting, roster);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -189,8 +227,8 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
     switch (filter) {
       case 'in': return isIn(m, session);
       case 'walkin': return isWalkin(m, session);
-      case 'noshow': return isNoShow(m, session);
-      case 'notyet': return (rsvpYes(m, session) || rsvpMaybe(m, session)) && !isIn(m, session) && !isNoShow(m, session);
+      case 'noshow': return displayStatus(m, session, noShowActive) === 'noshow';
+      case 'notyet': return isExpected(m, session) && !isIn(m, session) && displayStatus(m, session, noShowActive) !== 'noshow';
       case 'expected': return rsvpYes(m, session) || rsvpMaybe(m, session);
       case 'no': return rsvpNo(m, session);
       case 'undecided': return rsvpVal(m, session) === undefined;
@@ -240,7 +278,7 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
   const expectedCount = roster.filter(m => rsvpYes(m, session) || rsvpMaybe(m, session)).length;
   const inCount = roster.filter(m => isIn(m, session)).length;
   const walkCount = roster.filter(m => isWalkin(m, session)).length;
-  const noShowCount = roster.filter(m => isNoShow(m, session)).length;
+  const noShowCount = roster.filter(m => displayStatus(m, session, noShowActive) === 'noshow').length;
 
   const sheetMember = sheet?.mode === 'edit' ? roster.find(m => m.id === sheet.memberId) ?? null : null;
 
@@ -268,6 +306,7 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
           <a href="/admin/dashboard" className={cx(styles.navTab, styles.backlink)}>← Dashboard</a>
           <button className={cx(styles.navTab, view === 'roster' && styles.navTabActive)} onClick={() => setView('roster')}>Roster</button>
           <button className={cx(styles.navTab, view === 'events' && styles.navTabActive)} onClick={() => setView('events')}>Events</button>
+          <a href="/admin/dashboard/membership" className={styles.navTab}>Membership</a>
         </div>
       </header>
 
@@ -303,7 +342,7 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
           {view === 'roster' && (shown.length === 0 ? (
             <div className={styles.empty}>No one matches. Try a different search or filter.</div>
           ) : shown.map(m => {
-            const st = statusOf(m, session);
+            const st = displayStatus(m, session, noShowActive);
             const mark = st === 'in' ? '✓' : st === 'noshow' ? '✕' : '';
             const rv = rsvpVal(m, session);
             return (
@@ -335,19 +374,45 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
             );
           }))}
 
-          {view === 'events' && meetings.map(mt => (
-            <div key={mt.id} className={cx(styles.eventCard, mt.id === session && styles.current)}>
-              <div className={styles.eventTag}>{mt.id === session ? 'SELECTED SESSION' : meetingLabel(mt).toUpperCase()}</div>
-              <h3>{meetingLabel(mt)}</h3>
-              <p className={styles.eventDate}>{mt.weekday}, {mt.month} {mt.day}, {mt.year} · {mt.time}</p>
-              <p className={styles.eventLoc}>{mt.location}</p>
-              {mt.topic && <p className={styles.eventTopic}>{mt.topic}{mt.topicPresenter ? ` — ${mt.topicPresenter}` : ''}</p>}
-              <p className={styles.eventMeta}>
-                {roster.filter(m => m.rsvp?.[mt.id] === true).length} RSVP&apos;d yes
-                {roster.filter(m => m.rsvp?.[mt.id] === 'maybe').length > 0 && ` · ${roster.filter(m => m.rsvp?.[mt.id] === 'maybe').length} maybe`}
-              </p>
-            </div>
-          ))}
+          {view === 'events' && meetings.map(mt => {
+            const yes = roster.filter(m => m.rsvp?.[mt.id] === true).length;
+            const maybe = roster.filter(m => m.rsvp?.[mt.id] === 'maybe').length;
+            const ins = roster.filter(m => isIn(m, mt.id)).length;
+            const walks = roster.filter(m => isWalkin(m, mt.id)).length;
+            const active = noShowActiveFor(mt, roster);
+            const noshows = active ? roster.filter(m => displayStatus(m, mt.id, true) === 'noshow').length : 0;
+            return (
+              <div
+                key={mt.id}
+                className={cx(styles.eventCard, mt.id === session && styles.current)}
+                onClick={() => setSession(mt.id)}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className={styles.eventTag}>{mt.id === session ? 'SELECTED SESSION' : meetingLabel(mt).toUpperCase()}</div>
+                <h3>{meetingLabel(mt)}</h3>
+                <p className={styles.eventDate}>{mt.weekday}, {mt.month} {mt.day}, {mt.year} · {mt.time}</p>
+                <p className={styles.eventLoc}>{mt.location}</p>
+                {mt.topic && <p className={styles.eventTopic}>{mt.topic}{mt.topicPresenter ? ` — ${mt.topicPresenter}` : ''}</p>}
+                <div className={styles.eventStats}>
+                  <span><strong>{yes}</strong> RSVP&apos;d yes</span>
+                  {maybe > 0 && <span><strong>{maybe}</strong> maybe</span>}
+                  <span><strong>{ins}</strong> check-in{ins === 1 ? '' : 's'}</span>
+                  <span><strong>{walks}</strong> walk-in{walks === 1 ? '' : 's'}</span>
+                  {active
+                    ? <span className={styles.eventNoshow} title="RSVP'd yes but didn't check in"><strong>{noshows}</strong> no-show{noshows === 1 ? '' : 's'}</span>
+                    : <span className={styles.eventPending} title="No-shows are tallied once the meeting is over and check-in has been used">no-shows: pending</span>}
+                </div>
+                <button
+                  type="button"
+                  className={cx(styles.btn, styles.btnGhost)}
+                  style={{ marginTop: 14 }}
+                  onClick={e => { e.stopPropagation(); setSession(mt.id); setFilter('in'); setView('roster'); }}
+                >
+                  View check-ins →
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
 

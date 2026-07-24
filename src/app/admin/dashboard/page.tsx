@@ -141,32 +141,65 @@ export default async function DashboardPage({
         </form>
       </div>
 
-      {/* Nav strip */}
-      <div style={{ background: '#2a1c47', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 40px', display: 'flex', gap: 4 }}>
-        {[
-          { label: 'Check-In',  href: '/admin/dashboard/checkin' },
-          { label: 'Resources', href: '#resources' },
-          { label: 'Meetings',  href: '#meetings' },
-          { label: 'Members',   href: '#members' },
-          { label: 'Email',     href: '#email' },
-          { label: 'Content',   href: '#content' },
-        ].map(({ label, href }) => (
-          <a
-            key={href}
-            href={href}
-            style={{
-              color: 'rgba(255,255,255,0.65)',
-              fontSize: 13,
-              fontWeight: 500,
-              textDecoration: 'none',
-              padding: '10px 14px',
-              display: 'inline-block',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {label}
-          </a>
-        ))}
+      {/* Nav strip — the dashboard's own content sections sit on the left;
+          the standalone tools (separate pages) are pushed to the right. */}
+      <div style={{ background: '#2a1c47', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 40px', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+        {/* On-page content sections (left) */}
+        <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          {[
+            { label: 'Resources', href: '#resources' },
+            { label: 'Meetings',  href: '#meetings' },
+            { label: 'Members',   href: '#members' },
+            { label: 'Email',     href: '#email' },
+            { label: 'Content',   href: '#content' },
+          ].map(({ label, href }) => (
+            <a
+              key={href}
+              href={href}
+              style={{
+                color: 'rgba(255,255,255,0.65)',
+                fontSize: 13,
+                fontWeight: 500,
+                textDecoration: 'none',
+                padding: '10px 12px',
+                display: 'inline-block',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+
+        {/* Standalone tools (right) */}
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, padding: '9px 0' }}>
+          <span style={{ fontFamily: 'var(--font-plex-mono), monospace', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>Tools</span>
+          {[
+            { label: 'Check-In',   href: '/admin/dashboard/checkin' },
+            { label: 'Membership', href: '/admin/dashboard/membership' },
+          ].map(({ label, href }) => (
+            <a
+              key={href}
+              href={href}
+              style={{
+                color: '#fff',
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: 'none',
+                padding: '7px 14px',
+                borderRadius: 8,
+                background: 'rgba(255,255,255,0.10)',
+                border: '1px solid rgba(255,255,255,0.18)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {label}<span style={{ opacity: 0.55, fontSize: 11 }}>↗</span>
+            </a>
+          ))}
+        </div>
       </div>
 
       {saved === '1' && (

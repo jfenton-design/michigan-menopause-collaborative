@@ -120,6 +120,62 @@ export async function appendRsvp(p: Record<string, unknown>): Promise<void> {
   ]]);
 }
 
+// ---------- read RSVPs (for roster sync) ----------
+
+export type SheetRsvp = {
+  timestamp: string;
+  meetingLabel: string;
+  attendingRaw: string;
+  name: string;
+  credentials: string;
+  email: string;
+  phone: string;
+  practice: string;
+  guestCount: string;
+  guestNames: string;
+  dietary: string;
+  notes: string;
+};
+
+/** Reads the "RSVPs" tab (same schema appendRsvp writes). Returns [] when the
+ *  sheet/service-account isn't configured. Skips a header row if present. */
+export async function readRsvps(): Promise<SheetRsvp[]> {
+  const sheetId = process.env.GOOGLE_SHEET_ID;
+  if (!sheetId) return [];
+  const token = await getAccessToken();
+  if (!token) return [];
+
+  const range = encodeURIComponent("RSVPs!A1:L");
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    console.error("[sheets] read RSVPs failed:", await res.text());
+    return [];
+  }
+
+  const data = (await res.json()) as { values?: string[][] };
+  const rows = data.values ?? [];
+  const out: SheetRsvp[] = [];
+  for (const r of rows) {
+    const [
+      timestamp = "", meetingLabel = "", attendingRaw = "", name = "",
+      credentials = "", email = "", phone = "", practice = "",
+      guestCount = "", guestNames = "", dietary = "", notes = "",
+    ] = r;
+    // skip header row(s)
+    if (/^timestamp$/i.test(timestamp.trim()) || /^name$/i.test(name.trim())) continue;
+    if (!name.trim() && !email.trim()) continue;
+    out.push({
+      timestamp, meetingLabel, attendingRaw, name, credentials, email,
+      phone, practice, guestCount, guestNames, dietary, notes,
+    });
+  }
+  return out;
+}
+
 export async function appendCase(p: Record<string, unknown>): Promise<void> {
   await appendRows("Cases", [[
     new Date().toISOString(),
