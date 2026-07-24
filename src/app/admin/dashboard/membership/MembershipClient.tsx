@@ -59,28 +59,6 @@ function hay(m: CheckinMember): string {
   return [m.first, m.last, m.prefix, m.cred, m.spec, m.practice, m.email, m.phone, m.ptype].join(' ').toLowerCase();
 }
 function attended(m: CheckinMember, id: string) { return m.seasons?.[id] === 'in'; }
-function rsvpYes(m: CheckinMember, id: string) { return m.rsvp?.[id] === true; }
-function rsvpMaybe(m: CheckinMember, id: string) { return m.rsvp?.[id] === 'maybe'; }
-function isExpected(m: CheckinMember, id: string) { return rsvpYes(m, id) || rsvpMaybe(m, id); }
-function isWalkin(m: CheckinMember, id: string) { return attended(m, id) && !isExpected(m, id); }
-
-const MONTH_INDEX: Record<string, number> = {
-  Jan: 0, January: 0, Feb: 1, February: 1, Mar: 2, March: 2, Apr: 3, April: 3, May: 4,
-  Jun: 5, June: 5, Jul: 6, July: 6, Aug: 7, August: 7, Sep: 8, Sept: 8, September: 8,
-  Oct: 9, October: 9, Nov: 10, November: 10, Dec: 11, December: 11,
-};
-function meetingHasPassed(mt: Meeting): boolean {
-  const mi = MONTH_INDEX[(mt.month || '').trim()];
-  const day = parseInt(mt.day, 10);
-  const year = parseInt(mt.year, 10);
-  if (mi === undefined || Number.isNaN(day) || Number.isNaN(year)) return false;
-  return new Date(year, mi, day, 23, 59, 59, 999).getTime() < Date.now();
-}
-/** No-shows count only once the meeting is over AND check-in was actually used. */
-function noShowActiveFor(mt: Meeting, roster: CheckinMember[]): boolean {
-  return meetingHasPassed(mt) && roster.some(m => attended(m, mt.id));
-}
-function isNoShow(m: CheckinMember, id: string) { return isExpected(m, id) && !attended(m, id); }
 function attendedCount(m: CheckinMember): number {
   return Object.values(m.seasons ?? {}).filter(v => v === 'in').length;
 }
@@ -94,7 +72,6 @@ function cx(...parts: Array<string | false | undefined>): string {
   return parts.filter(Boolean).join(' ');
 }
 
-type Audience = 'in' | 'rsvp' | 'both';
 
 /* ------------------------------------------------------------- component */
 
@@ -102,7 +79,6 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
   const meetings = initialMeetings;
   const [roster, setRoster] = React.useState<CheckinMember[]>(initialRoster);
 
-  const [view, setView] = React.useState<'directory' | 'meeting'>('directory');
   const [query, setQuery] = React.useState('');
   const [dirFilter, setDirFilter] = React.useState<'all' | 'attended' | 'mscp' | 'noemail'>('all');
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -110,19 +86,6 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
   const [syncing, setSyncing] = React.useState(false);
   const [syncMsg, setSyncMsg] = React.useState<{ ok: boolean; text: string } | null>(null);
   const toastTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // default the meeting view to the meeting with the most check-ins (the one
-  // most likely to be "the most recent meeting"), falling back to the first.
-  const defaultMeetingId = React.useMemo(() => {
-    let best = meetings[0]?.id ?? '';
-    let bestN = -1;
-    for (const mt of meetings) {
-      const n = roster.filter(m => attended(m, mt.id)).length;
-      if (n > bestN) { bestN = n; best = mt.id; }
-    }
-    return best;
-  }, [meetings, roster]);
-  const [meetingId, setMeetingId] = React.useState(defaultMeetingId);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -196,7 +159,6 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
   });
 
   const selected = selectedId ? roster.find(m => m.id === selectedId) ?? null : null;
-  const meeting = meetings.find(m => m.id === meetingId) ?? meetings[0];
 
   const mscpCount = roster.filter(m => (m.mscp || '').toLowerCase() === 'certified').length;
   const withEmail = roster.filter(m => (m.email || '').trim()).length;
@@ -215,15 +177,12 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
         </div>
         <div className={styles.navTabs}>
           <a href="/admin/dashboard" className={cx(styles.navTab, styles.backlink)}>← Dashboard</a>
-          <a href="/admin/dashboard/checkin" className={styles.navTab}>Check-In</a>
-          <button className={cx(styles.navTab, view === 'directory' && styles.navTabActive)} onClick={() => setView('directory')}>Directory</button>
-          <button className={cx(styles.navTab, view === 'meeting' && styles.navTabActive)} onClick={() => setView('meeting')}>By Meeting</button>
+          <span className={cx(styles.navTab, styles.navTabActive)}>Directory</span>
         </div>
       </header>
 
       <div className={styles.content}>
-        {view === 'directory' && (
-          <>
+        <>
             <div className={styles.panel} style={{ padding: '18px 22px', marginBottom: 16 }}>
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                 <div style={{ flex: 1, minWidth: 240 }}>
@@ -287,20 +246,7 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
                 );
               })}
             </div>
-          </>
-        )}
-
-        {view === 'meeting' && meeting && (
-          <MeetingView
-            meeting={meeting}
-            meetings={meetings}
-            roster={roster}
-            meetingId={meetingId}
-            onMeetingChange={setMeetingId}
-            onCopy={copyText}
-            onSelectMember={setSelectedId}
-          />
-        )}
+        </>
       </div>
 
       {selected && (
@@ -315,295 +261,6 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
       )}
 
       {toast && <div className={styles.toast}>{toast}</div>}
-    </div>
-  );
-}
-
-/* ---------------------------------------------------------- meeting view */
-
-function audienceMembers(roster: CheckinMember[], id: string, audience: Audience): CheckinMember[] {
-  return sortByName(roster).filter(m => {
-    const inn = attended(m, id);
-    const yes = rsvpYes(m, id);
-    if (audience === 'in') return inn;
-    if (audience === 'rsvp') return yes;
-    return inn || yes;
-  });
-}
-
-function MeetingView({
-  meeting, meetings, roster, meetingId, onMeetingChange, onCopy, onSelectMember,
-}: {
-  meeting: Meeting;
-  meetings: Meeting[];
-  roster: CheckinMember[];
-  meetingId: string;
-  onMeetingChange: (id: string) => void;
-  onCopy: (text: string, label: string) => void;
-  onSelectMember: (id: string) => void;
-}) {
-  const [audience, setAudience] = React.useState<Audience>('in');
-
-  const inCount = roster.filter(m => attended(m, meetingId)).length;
-  const rsvpCount = roster.filter(m => rsvpYes(m, meetingId)).length;
-  const walkCount = roster.filter(m => isWalkin(m, meetingId)).length;
-  const noShowActive = noShowActiveFor(meeting, roster);
-  const noShowCount = noShowActive ? roster.filter(m => isNoShow(m, meetingId)).length : 0;
-
-  const people = audienceMembers(roster, meetingId, audience);
-  const emails = people.map(m => (m.email || '').trim()).filter(Boolean);
-  const missing = people.length - emails.length;
-
-  const audienceLabel = audience === 'in' ? 'checked in' : audience === 'rsvp' ? "RSVP'd yes" : "checked in or RSVP'd yes";
-
-  return (
-    <>
-      <div className={styles.tools}>
-        <select className={styles.select} value={meetingId} onChange={e => onMeetingChange(e.target.value)}>
-          {meetings.map(mt => (
-            <option key={mt.id} value={mt.id}>{mt.quarter} — {mt.month} {mt.day}{mt.year ? `, ${mt.year}` : ''}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className={styles.stats}>
-        <div className={cx(styles.stat, styles.statRsvp)}><div className={styles.statNum}>{rsvpCount}</div><div className={styles.statLabel}>RSVP&apos;d yes</div></div>
-        <div className={cx(styles.stat, styles.statIn)}><div className={styles.statNum}>{inCount}</div><div className={styles.statLabel}>Checked in</div></div>
-        <div className={styles.stat}><div className={styles.statNum}>{walkCount}</div><div className={styles.statLabel}>Walk-ins</div></div>
-        <div className={styles.stat}><div className={styles.statNum} style={{ color: noShowActive ? '#c0392b' : '#c9c2d6' }}>{noShowActive ? noShowCount : '—'}</div><div className={styles.statLabel} title="RSVP'd yes but didn't check in">No-shows</div></div>
-      </div>
-
-      {/* Copy emails */}
-      <div className={styles.panel}>
-        <div className={styles.panelHead}>
-          <div>
-            <h2 className={styles.panelTitle}>Copy attendee emails</h2>
-            <p className={styles.panelSub}>Grab everyone {audienceLabel} for {meeting.quarter}, ready to paste into Gmail&apos;s To or Bcc field.</p>
-          </div>
-        </div>
-
-        <div className={styles.audience}>
-          <span className={styles.audLabel}>Audience</span>
-          <div className={styles.seg}>
-            <button className={cx(audience === 'in' && styles.segOn)} onClick={() => setAudience('in')}>Checked in ({inCount})</button>
-            <button className={cx(audience === 'rsvp' && styles.segOn)} onClick={() => setAudience('rsvp')}>RSVP&apos;d yes ({rsvpCount})</button>
-            <button className={cx(audience === 'both' && styles.segOn)} onClick={() => setAudience('both')}>Both</button>
-          </div>
-        </div>
-
-        <div className={styles.copyRow}>
-          <button
-            className={cx(styles.btn, styles.btnBrand)}
-            disabled={emails.length === 0}
-            style={emails.length === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
-            onClick={() => onCopy(emails.join(', '), `Copied ${emails.length} email${emails.length === 1 ? '' : 's'}`)}
-          >
-            ⧉ Copy {emails.length} email{emails.length === 1 ? '' : 's'}
-          </button>
-          {missing > 0 && (
-            <span className={styles.copyNote}>{missing} {audienceLabel} {missing === 1 ? 'has' : 'have'} no email on file — add it in Check-In.</span>
-          )}
-        </div>
-
-        <div className={styles.attendList}>
-          {people.length === 0 ? (
-            <div className={styles.empty} style={{ padding: '30px 20px' }}>No one {audienceLabel} for this meeting yet.</div>
-          ) : people.map(m => {
-            const src = photoSrc(m.photo);
-            const email = (m.email || '').trim();
-            return (
-              <div key={m.id} className={styles.arow}>
-                <button className={styles.avatar} onClick={() => onSelectMember(m.id)} style={{ border: 'none', cursor: 'pointer' }}>
-                  {src ? <img src={src} alt="" /> : initials(m)}
-                </button>
-                <div>
-                  <p className={styles.aname}>{fullName(m)}</p>
-                  <p className={styles.ameta}>{[m.cred, m.spec].filter(Boolean).join(' · ') || '—'}</p>
-                </div>
-                <span className={cx(styles.aemail, !email && styles.aemailNone)}>{email || 'no email'}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Recap email builder */}
-      <RecapEmail meeting={meeting} emails={emails} audienceLabel={audienceLabel} onCopy={onCopy} />
-    </>
-  );
-}
-
-/* ------------------------------------------------------- recap email */
-
-const NAVY = '#1F1535';
-const ACCENT = '#6B3FCB';
-const PAPER = '#F7F4FB';
-const PAPER_2 = '#E8DEF7';
-const INK_SOFT = '#7A6E96';
-const LOGO_URL = 'https://michiganmenopause.com/assets/mmc-logo.png';
-
-function defaultRecapSubject(m: Meeting): string {
-  return `Thank you — recap from our ${m.quarter} meeting`;
-}
-function defaultRecapIntro(m: Meeting): string {
-  const topic = m.topic ? ` on ${m.topic.charAt(0).toLowerCase() + m.topic.slice(1)}` : '';
-  return (
-    `Thank you for joining us at the Michigan Menopause Collaborative ${m.quarter} meeting${topic}. ` +
-    `It was a rich discussion, and we're grateful for the expertise each of you brought to the room.\n\n` +
-    `A few highlights and follow-ups from the evening:`
-  );
-}
-
-function buildRecapHtml(m: Meeting, subject: string, intro: string, bullets: string[]): string {
-  const introHtml = intro.split('\n').map(l => l || '&nbsp;').join('<br>');
-  const bulletList = bullets.filter(b => b.trim()).length
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:20px">${bullets
-        .filter(b => b.trim())
-        .map(
-          b =>
-            `<tr><td style="padding:6px 0;vertical-align:top;width:22px;color:${ACCENT};font-size:15px;font-family:Arial,Helvetica,sans-serif">•</td><td style="padding:6px 0;font-size:15px;line-height:1.55;color:${NAVY};font-family:Arial,Helvetica,sans-serif">${b}</td></tr>`,
-        )
-        .join('')}</table>`
-    : '';
-
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${PAPER};font-family:Arial,Helvetica,sans-serif"><tr><td align="center" style="padding:24px 12px">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid ${PAPER_2}">
-    <tr>
-      <td style="background:#ffffff;padding:26px 32px 22px">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-          <td style="padding-right:12px"><img src="${LOGO_URL}" width="40" height="40" alt="MMC" style="display:block;width:40px;height:40px"></td>
-          <td style="color:${NAVY};font-size:16px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.2px">Michigan Menopause Collaborative</td>
-        </tr></table>
-      </td>
-    </tr>
-    <tr><td style="background:${ACCENT};height:4px;line-height:4px;font-size:0">&nbsp;</td></tr>
-    <tr>
-      <td style="padding:32px">
-        <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:${ACCENT};margin-bottom:10px">${m.quarter} Meeting &middot; Recap</div>
-        <h2 style="margin:0 0 16px;font-size:21px;font-weight:bold;color:${NAVY};font-family:Arial,Helvetica,sans-serif">${subject}</h2>
-        <p style="margin:0;font-size:15px;line-height:1.6;color:${NAVY};font-family:Arial,Helvetica,sans-serif">${introHtml}</p>
-        ${bulletList}
-        <p style="margin:26px 0 0;font-size:15px;line-height:1.6;color:${NAVY};font-family:Arial,Helvetica,sans-serif">Warmly,<br>Dr. Carrie Leff<br><span style="color:${INK_SOFT};font-size:14px">President, Michigan Menopause Collaborative</span></p>
-      </td>
-    </tr>
-    <tr>
-      <td style="padding:22px 32px;border-top:1px solid ${PAPER_2};background:${PAPER}">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-          <td style="vertical-align:middle;padding-right:12px"><img src="${LOGO_URL}" width="36" height="36" alt="" style="display:block;width:36px;height:36px;border-radius:7px;opacity:0.95"></td>
-          <td style="vertical-align:middle">
-            <div style="font-size:13px;font-weight:bold;color:${NAVY};font-family:Arial,Helvetica,sans-serif">Michigan Menopause Collaborative</div>
-            <div style="font-size:12px;color:${INK_SOFT};font-family:Arial,Helvetica,sans-serif">Midlife women&rsquo;s care, improved together</div>
-          </td>
-          <td style="vertical-align:middle;text-align:right"><a href="https://michiganmenopause.com" style="color:${ACCENT};font-size:13px;font-weight:bold;text-decoration:none;font-family:Arial,Helvetica,sans-serif">michiganmenopause.com</a></td>
-        </tr></table>
-      </td>
-    </tr>
-  </table>
-</td></tr></table>`;
-}
-
-function RecapEmail({ meeting, emails, audienceLabel, onCopy }: { meeting: Meeting; emails: string[]; audienceLabel: string; onCopy: (t: string, l: string) => void }) {
-  const [subject, setSubject] = React.useState(defaultRecapSubject(meeting));
-  const [intro, setIntro] = React.useState(defaultRecapIntro(meeting));
-  const [bulletsText, setBulletsText] = React.useState('');
-  const [copyStatus, setCopyStatus] = React.useState<'idle' | 'copied' | 'failed'>('idle');
-  const previewRef = React.useRef<HTMLDivElement>(null);
-
-  // reset copy when meeting changes
-  React.useEffect(() => {
-    setSubject(defaultRecapSubject(meeting));
-    setIntro(defaultRecapIntro(meeting));
-  }, [meeting]);
-
-  React.useEffect(() => {
-    if (copyStatus === 'copied' || copyStatus === 'failed') {
-      const t = setTimeout(() => setCopyStatus('idle'), 2500);
-      return () => clearTimeout(t);
-    }
-  }, [copyStatus]);
-
-  const bullets = bulletsText.split('\n').map(b => b.trim()).filter(Boolean);
-  const html = buildRecapHtml(meeting, subject, intro, bullets);
-
-  async function handleCopyEmail() {
-    try {
-      const text = [intro, '', ...bullets.map(b => `• ${b}`), '', 'Warmly,', 'Dr. Carrie Leff', 'President, Michigan Menopause Collaborative', '', 'Michigan Menopause Collaborative · michiganmenopause.com'].join('\n');
-      if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'text/html': new Blob([html], { type: 'text/html' }),
-            'text/plain': new Blob([text], { type: 'text/plain' }),
-          }),
-        ]);
-        setCopyStatus('copied');
-        return;
-      }
-      throw new Error('ClipboardItem unsupported');
-    } catch {
-      const node = previewRef.current;
-      if (!node) { setCopyStatus('failed'); return; }
-      const range = document.createRange();
-      range.selectNodeContents(node);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-      try {
-        const ok = document.execCommand('copy');
-        setCopyStatus(ok ? 'copied' : 'failed');
-      } catch { setCopyStatus('failed'); }
-      sel?.removeAllRanges();
-    }
-  }
-
-  return (
-    <div className={styles.panel}>
-      <div className={styles.panelHead}>
-        <div>
-          <h2 className={styles.panelTitle}>Recap email</h2>
-          <p className={styles.panelSub}>A branded thank-you for the {meeting.quarter} attendees. Edit, copy, and paste into Gmail.</p>
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gap: 16, marginTop: 16 }}>
-        <div>
-          <label className={styles.emailLabel}>Subject line</label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input className={styles.emailInput} value={subject} onChange={e => setSubject(e.target.value)} />
-            <button className={styles.miniCopy} style={{ padding: '0 14px' }} onClick={() => onCopy(subject, 'Copied subject')}>Copy</button>
-          </div>
-        </div>
-        <div>
-          <label className={styles.emailLabel}>Opening message</label>
-          <textarea className={styles.emailInput} style={{ resize: 'vertical' }} rows={4} value={intro} onChange={e => setIntro(e.target.value)} />
-        </div>
-        <div>
-          <label className={styles.emailLabel}>Highlights / follow-ups <span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 400 }}>(one bullet per line — leave blank to omit)</span></label>
-          <textarea className={styles.emailInput} style={{ resize: 'vertical' }} rows={4} value={bulletsText} onChange={e => setBulletsText(e.target.value)} placeholder={'Meeting notes are posted on the Resources page\nNext meeting: Fall 2026, aligned with the Menopause Society conference\nHave a case to present? Submit it at michiganmenopause.com'} />
-        </div>
-      </div>
-
-      <div className={styles.helpBox} style={{ marginTop: 18 }}>
-        <strong>Two-click send:</strong> click <strong>Copy email</strong> below, open a new Gmail message, and paste (Cmd/Ctrl+V) into the body — the header, colors, and logo carry over.
-        For recipients, use <strong>Copy {emails.length} email{emails.length === 1 ? '' : 's'}</strong> above and paste into the <strong>Bcc</strong> field so attendees don&apos;t see each other&apos;s addresses.
-      </div>
-
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18 }}>
-        <button className={cx(styles.btn, styles.btnBrand)} onClick={handleCopyEmail}>
-          {copyStatus === 'copied' ? 'Copied ✓' : 'Copy email'}
-        </button>
-        <button
-          className={cx(styles.btn, styles.btnGhost)}
-          disabled={emails.length === 0}
-          style={emails.length === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
-          onClick={() => onCopy(emails.join(', '), `Copied ${emails.length} recipient${emails.length === 1 ? '' : 's'}`)}
-        >
-          ⧉ Copy {emails.length} recipient{emails.length === 1 ? '' : 's'} ({audienceLabel})
-        </button>
-        {copyStatus === 'failed' && <span style={{ fontSize: 13, color: '#c0392b' }}>Couldn&apos;t copy — select the preview and press Cmd/Ctrl+C.</span>}
-      </div>
-
-      <label className={styles.emailLabel}>Preview</label>
-      <div ref={previewRef} contentEditable suppressContentEditableWarning className={styles.emailPreview} dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
 }
@@ -650,7 +307,7 @@ function ProfileDrawer({ member, meetings, onClose, onCopy, onPhoto, onToggleAtt
     <div className={styles.overlay} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className={styles.drawer}>
         <div className={styles.dhead}>
-          <button type="button" className={cx(styles.avatar, styles.photobtn)} onClick={() => fileRef.current?.click()} title="Upload or replace photo">
+          <button type="button" className={cx(styles.avatar, styles.photobtn, src && styles.hasPhoto)} onClick={() => fileRef.current?.click()} title={src ? 'Replace photo' : 'Upload photo'}>
             {src ? <img src={src} alt="" /> : initials(member)}
             <span className={styles.cam}>{uploading ? '…' : '📷'}</span>
           </button>

@@ -4,6 +4,7 @@ import type { Meeting } from '@/lib/data';
 import type { CheckinMember, RsvpValue } from '@/lib/checkin-data';
 import { BloomMark } from '@/components/Logo';
 import { persistRoster, uploadCheckinPhoto } from './actions';
+import { MeetingRecap } from './MeetingRecap';
 import styles from './checkin.module.css';
 import guestStyles from './guestSearch.module.css';
 import sheetStyles from './editSheet.module.css';
@@ -169,6 +170,15 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
     toastTimer.current = setTimeout(() => setToast(null), 1900);
   }
 
+  async function copyText(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(label);
+    } catch {
+      showToast('Copy failed — select and copy manually');
+    }
+  }
+
   function commitRoster(next: CheckinMember[]) {
     setRoster(next);
     persistQueue.current = persistQueue.current
@@ -274,6 +284,8 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
   }
 
   const shown = view === 'roster' ? sortedMembers(roster).filter(matchesRoster) : [];
+  const shownEmails = shown.map(m => (m.email || '').trim()).filter(Boolean);
+  const filterLabel = (FILTERS.find(f => f.key === filter)?.label ?? '').toLowerCase();
 
   const expectedCount = roster.filter(m => rsvpYes(m, session) || rsvpMaybe(m, session)).length;
   const inCount = roster.filter(m => isIn(m, session)).length;
@@ -293,40 +305,72 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
               <p className={styles.sub}>Check-In</p>
             </div>
           </div>
-          <div className={styles.sessionWrap}>
-            <label htmlFor="session">Session</label>
-            <select id="session" className={styles.sessionSelect} value={session} onChange={e => setSession(e.target.value)}>
-              {meetings.map(mt => (
-                <option key={mt.id} value={mt.id}>{meetingLabel(mt)}</option>
-              ))}
-            </select>
-          </div>
+          {view === 'roster' && (
+            <div className={styles.sessionWrap}>
+              <label htmlFor="session">Meeting</label>
+              <select id="session" className={styles.sessionSelect} value={session} onChange={e => setSession(e.target.value)}>
+                {meetings.map(mt => (
+                  <option key={mt.id} value={mt.id}>{meetingLabel(mt)}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
         <div className={styles.navTabs}>
           <a href="/admin/dashboard" className={cx(styles.navTab, styles.backlink)}>← Dashboard</a>
-          <button className={cx(styles.navTab, view === 'roster' && styles.navTabActive)} onClick={() => setView('roster')}>Roster</button>
-          <button className={cx(styles.navTab, view === 'events' && styles.navTabActive)} onClick={() => setView('events')}>Events</button>
-          <a href="/admin/dashboard/membership" className={styles.navTab}>Membership</a>
+          {view === 'roster' && (
+            <button className={cx(styles.navTab, styles.navTabActive)} onClick={() => setView('events')}>← All events</button>
+          )}
         </div>
       </header>
 
       <div className={styles.content}>
+        {view === 'roster' && sessionMeeting && (
+          <div className={styles.drillHead}>
+            <h2 className={styles.drillTitle}>{meetingLabel(sessionMeeting)}</h2>
+            <p className={styles.drillSub}>
+              {[sessionMeeting.weekday, `${sessionMeeting.month} ${sessionMeeting.day}`, sessionMeeting.year].filter(v => v && v !== '—').join(', ')}
+              {sessionMeeting.locationShort ? ` · ${sessionMeeting.locationShort}` : ''}
+            </p>
+          </div>
+        )}
+
         {view === 'roster' && (
           <div className={styles.tools}>
             <div className={styles.search}>
               <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>
               <input value={query} onChange={e => setQuery(e.target.value.trim().toLowerCase())} type="search" placeholder="Search name, practice, specialty…" />
             </div>
+            <button
+              className={cx(styles.btn, styles.btnBrand)}
+              disabled={shownEmails.length === 0}
+              style={shownEmails.length === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+              onClick={() => copyText(shownEmails.join(', '), `Copied ${shownEmails.length} ${filterLabel} email${shownEmails.length === 1 ? '' : 's'}`)}
+            >
+              ⧉ Copy {shownEmails.length} email{shownEmails.length === 1 ? '' : 's'}
+            </button>
             <button className={cx(styles.btn, styles.btnGhost)} onClick={exportCsv}>⤓ Export CSV</button>
           </div>
         )}
 
         {view === 'roster' && (
           <div className={styles.stats}>
-            <div className={styles.stat}><div className={styles.statNum}>{expectedCount}</div><div className={styles.statLabel}>Expected</div></div>
-            <div className={cx(styles.stat, styles.statInx)}><div className={styles.statNum}>{inCount}</div><div className={styles.statLabel}>Checked In</div></div>
-            <div className={cx(styles.stat, styles.statWalk)}><div className={styles.statNum}>{walkCount}</div><div className={styles.statLabel}>Walk-ins</div></div>
-            <div className={cx(styles.stat, styles.statNox)}><div className={styles.statNum}>{noShowCount}</div><div className={styles.statLabel}>No-show</div></div>
+            {([
+              { key: 'expected', label: 'Expected',   val: expectedCount, cls: '' },
+              { key: 'in',       label: 'Checked In',  val: inCount,       cls: styles.statInx },
+              { key: 'walkin',   label: 'Walk-ins',    val: walkCount,     cls: styles.statWalk },
+              { key: 'noshow',   label: 'No-show',     val: noShowCount,   cls: styles.statNox },
+            ] as const).map(s => (
+              <button
+                key={s.key}
+                className={cx(styles.stat, styles.statBtn, s.cls, filter === s.key && styles.statActive)}
+                onClick={() => setFilter(s.key)}
+                title={`Show ${s.label.toLowerCase()}`}
+              >
+                <div className={styles.statNum}>{s.val}</div>
+                <div className={styles.statLabel}>{s.label}</div>
+              </button>
+            ))}
           </div>
         )}
 
@@ -385,7 +429,7 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
               <div
                 key={mt.id}
                 className={cx(styles.eventCard, mt.id === session && styles.current)}
-                onClick={() => setSession(mt.id)}
+                onClick={() => { setSession(mt.id); setFilter('in'); setView('roster'); }}
                 style={{ cursor: 'pointer' }}
               >
                 <div className={styles.eventTag}>{mt.id === session ? 'SELECTED SESSION' : meetingLabel(mt).toUpperCase()}</div>
@@ -402,18 +446,15 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
                     ? <span className={styles.eventNoshow} title="RSVP'd yes but didn't check in"><strong>{noshows}</strong> no-show{noshows === 1 ? '' : 's'}</span>
                     : <span className={styles.eventPending} title="No-shows are tallied once the meeting is over and check-in has been used">no-shows: pending</span>}
                 </div>
-                <button
-                  type="button"
-                  className={cx(styles.btn, styles.btnGhost)}
-                  style={{ marginTop: 14 }}
-                  onClick={e => { e.stopPropagation(); setSession(mt.id); setFilter('in'); setView('roster'); }}
-                >
-                  View check-ins →
-                </button>
+                <div className={styles.eventCta}>Open roster &amp; recap →</div>
               </div>
             );
           })}
         </div>
+
+        {view === 'roster' && sessionMeeting && (
+          <MeetingRecap meeting={sessionMeeting} emails={shownEmails} onCopy={copyText} />
+        )}
       </div>
 
       {view === 'roster' && (
