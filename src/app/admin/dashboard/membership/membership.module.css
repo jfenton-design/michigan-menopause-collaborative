@@ -44,8 +44,8 @@
 .grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 12px; }
 .mcard { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1.5px solid transparent; padding: 16px; cursor: pointer; text-align: left; font-family: inherit; transition: border-color .12s, box-shadow .12s; display: flex; gap: 13px; align-items: flex-start; }
 .mcard:hover { border-color: #c9b8f0; box-shadow: 0 3px 12px rgba(109,59,228,0.12); }
-.avatar { width: 52px; height: 52px; border-radius: 50%; background: #ede9f7; color: #6D3BE4; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; flex-shrink: 0; overflow: hidden; }
-.avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.avatar { width: 52px; height: 52px; border-radius: 50%; background: #ede9f7; color: #6D3BE4; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; flex-shrink: 0; overflow: hidden; padding: 0; box-sizing: border-box; aspect-ratio: 1 / 1; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 .mbody { flex: 1; min-width: 0; }
 .mname { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 .mcred { font-family: var(--font-plex-mono), monospace; font-size: 11px; font-weight: 400; color: #5a5168; margin-left: 7px; }
@@ -91,7 +91,10 @@
 .dhead { background: #1F1535; padding: 24px; display: flex; align-items: center; gap: 16px; position: relative; }
 .dhead .avatar { width: 68px; height: 68px; font-size: 22px; background: #3a2b5c; color: #fff; }
 .photobtn { position: relative; cursor: pointer; border: none; padding: 0; flex-shrink: 0; }
-.cam { position: absolute; right: -3px; bottom: -3px; width: 26px; height: 26px; border-radius: 50%; background: #6D3BE4; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #1F1535; }
+.cam { position: absolute; right: -3px; bottom: -3px; width: 26px; height: 26px; border-radius: 50%; background: #6D3BE4; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #1F1535; transition: opacity .12s; }
+/* Once a photo is set, keep the camera badge hidden until hover (still replaceable). */
+.photobtn.hasPhoto .cam { opacity: 0; }
+.photobtn.hasPhoto:hover .cam { opacity: 1; }
 .dHeadName { color: #fff; font-size: 19px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 .dHeadCred { color: rgba(255,255,255,0.6); font-size: 12px; font-family: var(--font-plex-mono), monospace; margin: 4px 0 0; }
 .close { position: absolute; top: 16px; right: 18px; background: rgba(255,255,255,0.14); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; font-size: 18px; cursor: pointer; line-height: 1; }
