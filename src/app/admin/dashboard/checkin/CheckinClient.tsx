@@ -110,7 +110,7 @@ const FILTERS = [
   { key: 'in', label: 'Checked In' },
   { key: 'walkin', label: 'Walk-ins' },
   { key: 'noshow', label: 'No-show' },
-  { key: 'notyet', label: 'Not Arrived' },
+  { key: 'attendees', label: 'All Attendees' },
   { key: 'all', label: 'All' },
   { key: 'no', label: 'RSVP No' },
   { key: 'undecided', label: 'Undecided' },
@@ -238,7 +238,7 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
       case 'in': return isIn(m, session);
       case 'walkin': return isWalkin(m, session);
       case 'noshow': return displayStatus(m, session, noShowActive) === 'noshow';
-      case 'notyet': return isExpected(m, session) && !isIn(m, session) && displayStatus(m, session, noShowActive) !== 'noshow';
+      case 'attendees': return isIn(m, session); // walk-ins + check-ins = everyone who showed up
       case 'expected': return rsvpYes(m, session) || rsvpMaybe(m, session);
       case 'no': return rsvpNo(m, session);
       case 'undecided': return rsvpVal(m, session) === undefined;
