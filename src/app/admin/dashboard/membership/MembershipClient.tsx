@@ -117,7 +117,8 @@ function buildDirectoryHtml(members: CheckinMember[], generatedOn: string): stri
       <td>${esc(m.cred || '—')}</td>
       <td>${esc(m.spec || m.ptype || '—')}</td>
       <td>${esc(m.practice || '—')}</td>
-      <td>${esc(m.email || '—')}</td>
+      <td class="email">${esc(m.email || '—')}</td>
+      <td class="phone">${esc(m.phone || '—')}</td>
     </tr>`;
   }).join('');
   const count = members.length;
@@ -138,6 +139,8 @@ function buildDirectoryHtml(members: CheckinMember[], generatedOn: string): stri
   tbody tr:nth-child(even) { background: #FAF8FE; }
   .name { font-weight: 600; white-space: nowrap; }
   .num { color: #b3a9c9; width: 22px; }
+  .phone { white-space: nowrap; }
+  .email { word-break: break-all; }
   .footer { position: fixed; bottom: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; font-size: 11px; color: #7A6E96; padding: 8px 0.5in; border-top: 1px solid #E8DEF7; background: #fff; }
   .footer img { width: 22px; height: 22px; display: block; }
   .footer .site { margin-left: auto; color: #6B3FCB; font-weight: bold; text-decoration: none; }
@@ -145,7 +148,7 @@ function buildDirectoryHtml(members: CheckinMember[], generatedOn: string): stri
     thead { display: table-header-group; }
     tr { page-break-inside: avoid; }
   }
-  @page { size: letter; margin: 0.5in; }
+  @page { size: letter landscape; margin: 0.45in; }
 </style></head><body>
   <div class="brandbar">
     <img src="${LOGO}" alt="MMC">
@@ -157,16 +160,15 @@ function buildDirectoryHtml(members: CheckinMember[], generatedOn: string): stri
   </div>
   <table>
     <thead><tr>
-      <th class="num">#</th><th>Name</th><th>Credentials</th><th>Specialty</th><th>Practice</th><th>Email</th>
+      <th class="num">#</th><th>Name</th><th>Credentials</th><th>Specialty</th><th>Practice</th><th>Email</th><th>Phone</th>
     </tr></thead>
-    <tbody>${rows || '<tr><td colspan="6" style="padding:30px;text-align:center;color:#7A6E96">No members to list yet.</td></tr>'}</tbody>
+    <tbody>${rows || '<tr><td colspan="7" style="padding:30px;text-align:center;color:#7A6E96">No members to list yet.</td></tr>'}</tbody>
   </table>
   <div class="footer">
     <img src="${LOGO}" alt="">
     <span>Michigan Menopause Collaborative &middot; Midlife women&rsquo;s care, improved together</span>
     <a class="site" href="https://michiganmenopause.com">michiganmenopause.com</a>
   </div>
-  <script>window.onload=function(){setTimeout(function(){window.print();},400);};</script>
 </body></html>`;
 }
 
@@ -305,19 +307,26 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
     const members = sortByName(roster).filter(m => isMember(m) && shownInDirectory(m));
     const generatedOn = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const html = buildDirectoryHtml(members, generatedOn);
-    // Print via a hidden iframe (popup-safe — no window.open, so it can't be blocked).
+    // Print via a hidden iframe with srcdoc (popup-safe and no contentWindow
+    // timing races), then open the browser's print → Save-as-PDF dialog.
     const iframe = document.createElement('iframe');
     iframe.setAttribute('aria-hidden', 'true');
     iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    iframe.onload = () => {
+      const win = iframe.contentWindow;
+      if (!win) { iframe.remove(); return; }
+      const cleanup = () => setTimeout(() => iframe.remove(), 1500);
+      win.onafterprint = cleanup;
+      try {
+        win.focus();
+        setTimeout(() => win.print(), 300); // small delay lets the logo images load
+      } catch {
+        cleanup();
+      }
+      setTimeout(cleanup, 60000); // fallback if dismissed without an event
+    };
+    iframe.srcdoc = html;
     document.body.appendChild(iframe);
-    const doc = iframe.contentWindow?.document;
-    if (!doc) { showToast('Could not generate the PDF'); iframe.remove(); return; }
-    doc.open();
-    doc.write(html); // the document auto-triggers print() on load
-    doc.close();
-    const cleanup = () => setTimeout(() => iframe.remove(), 1500);
-    if (iframe.contentWindow) iframe.contentWindow.onafterprint = cleanup;
-    setTimeout(cleanup, 60000); // fallback if the print dialog is dismissed without an event
     showToast('Opening print dialog — choose “Save as PDF”');
   }
 
