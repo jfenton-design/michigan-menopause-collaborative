@@ -235,7 +235,7 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
   function matchesRoster(m: CheckinMember): boolean {
     if (query && !hay(m).includes(query)) return false;
     switch (filter) {
-      case 'in': return isIn(m, session);
+      case 'in': return isIn(m, session) && isExpected(m, session);
       case 'walkin': return isWalkin(m, session);
       case 'noshow': return displayStatus(m, session, noShowActive) === 'noshow';
       case 'attendees': return isIn(m, session); // walk-ins + check-ins = everyone who showed up
@@ -288,8 +288,9 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
   const filterLabel = (FILTERS.find(f => f.key === filter)?.label ?? '').toLowerCase();
 
   const expectedCount = roster.filter(m => rsvpYes(m, session) || rsvpMaybe(m, session)).length;
-  const inCount = roster.filter(m => isIn(m, session)).length;
+  const inCount = roster.filter(m => isIn(m, session) && isExpected(m, session)).length; // RSVP'd and arrived
   const walkCount = roster.filter(m => isWalkin(m, session)).length;
+  const attendeesCount = roster.filter(m => isIn(m, session)).length; // check-ins + walk-ins
   const noShowCount = roster.filter(m => displayStatus(m, session, noShowActive) === 'noshow').length;
 
   const sheetMember = sheet?.mode === 'edit' ? roster.find(m => m.id === sheet.memberId) ?? null : null;
@@ -356,10 +357,11 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
         {view === 'roster' && (
           <div className={styles.stats}>
             {([
-              { key: 'expected', label: 'Expected',   val: expectedCount, cls: '' },
-              { key: 'in',       label: 'Checked In',  val: inCount,       cls: styles.statInx },
-              { key: 'walkin',   label: 'Walk-ins',    val: walkCount,     cls: styles.statWalk },
-              { key: 'noshow',   label: 'No-show',     val: noShowCount,   cls: styles.statNox },
+              { key: 'expected',  label: 'Expected',      val: expectedCount,  cls: '' },
+              { key: 'in',        label: 'Checked In',    val: inCount,        cls: styles.statInx },
+              { key: 'walkin',    label: 'Walk-ins',      val: walkCount,      cls: styles.statWalk },
+              { key: 'attendees', label: 'All Attendees', val: attendeesCount, cls: styles.statInx },
+              { key: 'noshow',    label: 'No-show',       val: noShowCount,    cls: styles.statNox },
             ] as const).map(s => (
               <button
                 key={s.key}
@@ -421,15 +423,16 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
           {view === 'events' && meetings.map(mt => {
             const yes = roster.filter(m => m.rsvp?.[mt.id] === true).length;
             const maybe = roster.filter(m => m.rsvp?.[mt.id] === 'maybe').length;
-            const ins = roster.filter(m => isIn(m, mt.id)).length;
+            const ins = roster.filter(m => isIn(m, mt.id) && isExpected(m, mt.id)).length;
             const walks = roster.filter(m => isWalkin(m, mt.id)).length;
+            const attended = roster.filter(m => isIn(m, mt.id)).length;
             const active = noShowActiveFor(mt, roster);
             const noshows = active ? roster.filter(m => displayStatus(m, mt.id, true) === 'noshow').length : 0;
             return (
               <div
                 key={mt.id}
                 className={cx(styles.eventCard, mt.id === session && styles.current)}
-                onClick={() => { setSession(mt.id); setFilter('in'); setView('roster'); }}
+                onClick={() => { setSession(mt.id); setFilter('attendees'); setView('roster'); }}
                 style={{ cursor: 'pointer' }}
               >
                 <div className={styles.eventTag}>{mt.id === session ? 'SELECTED SESSION' : meetingLabel(mt).toUpperCase()}</div>
@@ -442,6 +445,7 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
                   {maybe > 0 && <span><strong>{maybe}</strong> maybe</span>}
                   <span><strong>{ins}</strong> check-in{ins === 1 ? '' : 's'}</span>
                   <span><strong>{walks}</strong> walk-in{walks === 1 ? '' : 's'}</span>
+                  <span><strong>{attended}</strong> attended</span>
                   {active
                     ? <span className={styles.eventNoshow} title="RSVP'd yes but didn't check in"><strong>{noshows}</strong> no-show{noshows === 1 ? '' : 's'}</span>
                     : <span className={styles.eventPending} title="No-shows are tallied once the meeting is over and check-in has been used">no-shows: pending</span>}
