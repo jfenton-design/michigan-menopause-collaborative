@@ -92,6 +92,84 @@ const EDIT_FIELDS: Array<{ k: keyof CheckinMember; label: string; type: 'text' |
   { k: 'mscp', label: 'MSCP status', type: 'select', opts: MSCP_OPTS },
 ];
 
+/** A member is anyone who has attended at least one meeting (currently the
+ *  first two events — we don't charge yet, so attendance = membership). */
+function isMember(m: CheckinMember): boolean {
+  return attendedCount(m) > 0;
+}
+/** Shown in the directory / membership PDF unless explicitly opted out. */
+function shownInDirectory(m: CheckinMember): boolean {
+  return (m.consent || '').trim().toLowerCase() !== 'no';
+}
+
+function esc(s: unknown): string {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
+}
+
+/** Self-contained, print-optimized HTML for the branded member directory PDF. */
+function buildDirectoryHtml(members: CheckinMember[], generatedOn: string): string {
+  const LOGO = 'https://michiganmenopause.com/assets/mmc-logo.png';
+  const rows = members.map((m, i) => {
+    const name = [m.prefix, m.first, m.last].filter(Boolean).join(' ').trim() || '—';
+    return `<tr>
+      <td class="num">${i + 1}</td>
+      <td class="name">${esc(name)}</td>
+      <td>${esc(m.cred || '—')}</td>
+      <td>${esc(m.spec || m.ptype || '—')}</td>
+      <td>${esc(m.practice || '—')}</td>
+      <td>${esc(m.email || '—')}</td>
+    </tr>`;
+  }).join('');
+  const count = members.length;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>MMC Member Directory</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1F1535; padding: 0 0.5in 60px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .brandbar { display: flex; align-items: center; gap: 14px; padding: 22px 0 14px; border-bottom: 3px solid #6B3FCB; }
+  .brandbar img { width: 46px; height: 46px; display: block; }
+  .brandbar h1 { font-size: 18px; margin: 0; letter-spacing: -0.01em; }
+  .brandbar .sub { font-size: 11px; color: #7A6E96; margin-top: 3px; font-family: 'Courier New', monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+  .meta { margin-left: auto; text-align: right; font-size: 11px; color: #7A6E96; line-height: 1.5; }
+  .meta strong { color: #6B3FCB; font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 11px; }
+  thead th { text-align: left; background: #F7F4FB; color: #6B3FCB; text-transform: uppercase; letter-spacing: 0.05em; font-size: 9px; padding: 8px; border-bottom: 1.5px solid #E8DEF7; }
+  tbody td { padding: 7px 8px; border-bottom: 1px solid #efeaf7; vertical-align: top; }
+  tbody tr:nth-child(even) { background: #FAF8FE; }
+  .name { font-weight: 600; white-space: nowrap; }
+  .num { color: #b3a9c9; width: 22px; }
+  .footer { position: fixed; bottom: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; font-size: 11px; color: #7A6E96; padding: 8px 0.5in; border-top: 1px solid #E8DEF7; background: #fff; }
+  .footer img { width: 22px; height: 22px; display: block; }
+  .footer .site { margin-left: auto; color: #6B3FCB; font-weight: bold; text-decoration: none; }
+  @media print {
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; }
+  }
+  @page { size: letter; margin: 0.5in; }
+</style></head><body>
+  <div class="brandbar">
+    <img src="${LOGO}" alt="MMC">
+    <div>
+      <h1>Michigan Menopause Collaborative</h1>
+      <div class="sub">Member Directory</div>
+    </div>
+    <div class="meta"><strong>${count}</strong> member${count === 1 ? '' : 's'}<br>Generated ${esc(generatedOn)}</div>
+  </div>
+  <table>
+    <thead><tr>
+      <th class="num">#</th><th>Name</th><th>Credentials</th><th>Specialty</th><th>Practice</th><th>Email</th>
+    </tr></thead>
+    <tbody>${rows || '<tr><td colspan="6" style="padding:30px;text-align:center;color:#7A6E96">No members to list yet.</td></tr>'}</tbody>
+  </table>
+  <div class="footer">
+    <img src="${LOGO}" alt="">
+    <span>Michigan Menopause Collaborative &middot; Midlife women&rsquo;s care, improved together</span>
+    <a class="site" href="https://michiganmenopause.com">michiganmenopause.com</a>
+  </div>
+  <script>window.onload=function(){setTimeout(function(){window.print();},400);};</script>
+</body></html>`;
+}
+
 
 /* ------------------------------------------------------------- component */
 
@@ -211,6 +289,38 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
     setSelectedId(null);
   }
 
+  async function handleToggleDirectory(memberId: string): Promise<void> {
+    const next = roster.map(m => (m.id === memberId ? { ...m, consent: shownInDirectory(m) ? 'No' : 'Yes', edited: true } : m));
+    setRoster(next);
+    try {
+      await persistRoster(next);
+      showToast('Directory visibility updated');
+    } catch (err) {
+      console.error('[membership] directory toggle failed', err);
+      showToast('Saved on screen, but not persisted (check connection)');
+    }
+  }
+
+  function handleDownloadPdf() {
+    const members = sortByName(roster).filter(m => isMember(m) && shownInDirectory(m));
+    const generatedOn = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const html = buildDirectoryHtml(members, generatedOn);
+    // Print via a hidden iframe (popup-safe — no window.open, so it can't be blocked).
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow?.document;
+    if (!doc) { showToast('Could not generate the PDF'); iframe.remove(); return; }
+    doc.open();
+    doc.write(html); // the document auto-triggers print() on load
+    doc.close();
+    const cleanup = () => setTimeout(() => iframe.remove(), 1500);
+    if (iframe.contentWindow) iframe.contentWindow.onafterprint = cleanup;
+    setTimeout(cleanup, 60000); // fallback if the print dialog is dismissed without an event
+    showToast('Opening print dialog — choose “Save as PDF”');
+  }
+
   /* directory list */
   const dirList = sortByName(roster).filter(m => {
     if (query && !hay(m).includes(query)) return false;
@@ -226,6 +336,7 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
 
   const mscpCount = roster.filter(m => (m.mscp || '').toLowerCase() === 'certified').length;
   const withEmail = roster.filter(m => (m.email || '').trim()).length;
+  const memberCount = roster.filter(m => isMember(m) && shownInDirectory(m)).length;
 
   return (
     <div className={styles.wrap}>
@@ -275,6 +386,7 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
                 <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>
                 <input value={query} onChange={e => setQuery(e.target.value.trim().toLowerCase())} type="search" placeholder="Search name, practice, specialty, email…" />
               </div>
+              <button className={cx(styles.btn, styles.btnGhost)} onClick={handleDownloadPdf} title="Download the current member directory as a branded PDF">⤓ Download PDF ({memberCount})</button>
               <button className={cx(styles.btn, styles.btnBrand)} onClick={handleAddContact}>＋ New contact</button>
             </div>
 
@@ -326,6 +438,7 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
           onToggleAttendance={handleToggleAttendance}
           onSaveDetails={handleSaveDetails}
           onDelete={handleDeleteContact}
+          onToggleDirectory={handleToggleDirectory}
         />
       )}
 
@@ -336,7 +449,7 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
 
 /* ------------------------------------------------------- profile drawer */
 
-function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhoto, onToggleAttendance, onSaveDetails, onDelete }: {
+function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhoto, onToggleAttendance, onSaveDetails, onDelete, onToggleDirectory }: {
   member: CheckinMember;
   meetings: Meeting[];
   startEditing?: boolean;
@@ -346,6 +459,7 @@ function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhot
   onToggleAttendance: (memberId: string, meetingId: string) => void;
   onSaveDetails: (memberId: string, patch: Partial<CheckinMember>) => void;
   onDelete: (memberId: string) => void;
+  onToggleDirectory: (memberId: string) => void;
 }) {
   const src = photoSrc(member.photo);
   const nAtt = attendedCount(member);
@@ -394,7 +508,7 @@ function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhot
     ['Provider type', member.ptype || '—'],
     ['Specialty', member.spec || '—'],
     ['MSCP', member.mscp || '—'],
-    ['Directory consent', member.consent || '—'],
+    ['Practice', member.practice || '—'],
   ];
 
   React.useEffect(() => {
@@ -441,10 +555,10 @@ function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhot
               </div>
 
               <div className={styles.dsection}>
-                <p className={styles.dsectionLabel}>Directory consent</p>
+                <p className={styles.dsectionLabel}>Show in directory</p>
                 <div className={styles.seg2}>
-                  <button type="button" className={cx(styles.segBtn, form.consent === 'Yes' && styles.segBtnOn)} onClick={() => field('consent', form.consent === 'Yes' ? '' : 'Yes')}>Yes</button>
-                  <button type="button" className={cx(styles.segBtn, form.consent === 'No' && styles.segBtnNo)} onClick={() => field('consent', form.consent === 'No' ? '' : 'No')}>No</button>
+                  <button type="button" className={cx(styles.segBtn, (form.consent || '').toLowerCase() !== 'no' && styles.segBtnOn)} onClick={() => field('consent', 'Yes')}>Shown</button>
+                  <button type="button" className={cx(styles.segBtn, (form.consent || '').toLowerCase() === 'no' && styles.segBtnNo)} onClick={() => field('consent', 'No')}>Hidden</button>
                 </div>
               </div>
 
@@ -464,6 +578,26 @@ function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhot
           ) : (
             <>
           <button className={cx(styles.btn, styles.btnGhost)} style={{ marginBottom: 18 }} onClick={() => { setForm(member); setEditing(true); }}>✎ Edit contact &amp; details</button>
+
+          {/* directory membership */}
+          <div className={styles.dsection}>
+            <div className={styles.dirRow}>
+              <div style={{ minWidth: 0 }}>
+                <p className={styles.dsectionLabel} style={{ margin: 0 }}>Show in directory</p>
+                <p className={styles.dirNote}>{isMember(member) ? 'Member — has attended an event' : 'Not a member yet (no events attended)'}</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={shownInDirectory(member)}
+                className={cx(styles.switch, shownInDirectory(member) && styles.switchOn)}
+                onClick={() => onToggleDirectory(member.id)}
+                title={shownInDirectory(member) ? 'Currently in the directory — click to hide' : 'Hidden from the directory — click to show'}
+              >
+                <span className={styles.knob} />
+              </button>
+            </div>
+          </div>
 
           {/* contact */}
           <div className={styles.dsection}>

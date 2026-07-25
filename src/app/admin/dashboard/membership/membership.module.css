@@ -141,6 +141,14 @@
 .segBtnNo { background: #c0392b; color: #fff; }
 .deleteLink { margin-left: auto; background: none; border: none; color: #c0392b; font-size: 13px; cursor: pointer; font-family: var(--font-plex-mono), monospace; padding: 6px 8px; }
 
+/* ---- show-in-directory switch ---- */
+.dirRow { display: flex; align-items: center; gap: 14px; background: #F7F5FC; border-radius: 10px; padding: 12px 14px; }
+.dirNote { font-size: 12.5px; color: #7a6e8a; margin: 3px 0 0; }
+.switch { flex-shrink: 0; margin-left: auto; width: 46px; height: 26px; border-radius: 999px; border: none; background: #d8d3e8; position: relative; cursor: pointer; padding: 0; transition: background .15s; }
+.switchOn { background: #2d6a2d; }
+.knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.3); transition: left .15s; }
+.switchOn .knob { left: 23px; }
+
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1F1535; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: 500; z-index: 90; box-shadow: 0 4px 20px rgba(0,0,0,.25); font-size: 14px; font-family: inherit; }
 
 @media (max-width: 640px) {
