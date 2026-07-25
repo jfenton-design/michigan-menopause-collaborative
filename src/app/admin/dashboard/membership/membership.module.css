@@ -128,6 +128,19 @@
 .tStatusNo { color: #9a90ac; background: #f2eefb; }
 .notesBox { font-size: 14px; color: #443766; line-height: 1.55; background: #FBF0DC; border-radius: 8px; padding: 12px 14px; }
 
+/* ---- inline edit form ---- */
+.editGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+.editField { grid-column: span 2; }
+.editHalf { grid-column: span 1; }
+.editLabel { font-family: var(--font-plex-mono), monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #9a90ac; display: block; margin-bottom: 4px; }
+.editInput { width: 100%; padding: 9px 12px; border: 1.5px solid #d8d3e8; border-radius: 8px; font-size: 14px; font-family: inherit; box-sizing: border-box; background: #fff; color: #1F1535; }
+.seg2 { display: inline-flex; border: 1.5px solid #d8d3e8; border-radius: 8px; overflow: hidden; }
+.segBtn { border: none; background: #fff; color: #5a5168; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; border-right: 1.5px solid #d8d3e8; }
+.segBtn:last-child { border-right: none; }
+.segBtnOn { background: #2d6a2d; color: #fff; }
+.segBtnNo { background: #c0392b; color: #fff; }
+.deleteLink { margin-left: auto; background: none; border: none; color: #c0392b; font-size: 13px; cursor: pointer; font-family: var(--font-plex-mono), monospace; padding: 6px 8px; }
+
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1F1535; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: 500; z-index: 90; box-shadow: 0 4px 20px rgba(0,0,0,.25); font-size: 14px; font-family: inherit; }
 
 @media (max-width: 640px) {
