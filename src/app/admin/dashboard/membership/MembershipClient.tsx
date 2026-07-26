@@ -423,6 +423,7 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
                       <p className={styles.mname}>{fullName(m)}{m.cred && <span className={styles.mcred}>{m.cred}</span>}</p>
                       <p className={styles.mmeta}>{metaLine(m) || '—'}</p>
                       <div className={styles.mtags}>
+                        {m.leadership && <span className={cx(styles.tag, styles.tagAccent)}>LEADERSHIP</span>}
                         {nAtt > 0 && <span className={cx(styles.tag, styles.tagIn)}>{nAtt} MEETING{nAtt > 1 ? 'S' : ''}</span>}
                         {(m.mscp || '').toLowerCase() === 'certified' && <span className={cx(styles.tag, styles.tagAccent)}>MSCP</span>}
                         {!(m.email || '').trim() && <span className={cx(styles.tag, styles.tagMuted)}>NO EMAIL</span>}
@@ -488,6 +489,10 @@ function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhot
       prefix: form.prefix, first: form.first, last: form.last, cred: form.cred,
       email: (form.email || '').trim(), phone: (form.phone || '').trim(), practice: form.practice,
       spec: form.spec, ptype: form.ptype, mscp: form.mscp, consent: form.consent, notes: form.notes,
+      leadership: !!form.leadership,
+      leadershipTitle: (form.leadershipTitle || '').trim(),
+      leadershipLinkLabel: (form.leadershipLinkLabel || '').trim(),
+      leadershipLinkUrl: (form.leadershipLinkUrl || '').trim(),
     });
     isNewRef.current = false;
     setEditing(false);
@@ -569,6 +574,41 @@ function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhot
                   <button type="button" className={cx(styles.segBtn, (form.consent || '').toLowerCase() !== 'no' && styles.segBtnOn)} onClick={() => field('consent', 'Yes')}>Shown</button>
                   <button type="button" className={cx(styles.segBtn, (form.consent || '').toLowerCase() === 'no' && styles.segBtnNo)} onClick={() => field('consent', 'No')}>Hidden</button>
                 </div>
+              </div>
+
+              <div className={styles.dsection}>
+                <div className={styles.dirRow}>
+                  <div style={{ minWidth: 0 }}>
+                    <p className={styles.dsectionLabel} style={{ margin: 0 }}>Show as Leadership</p>
+                    <p className={styles.dirNote}>Feature this person on the public Leadership page.</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={!!form.leadership}
+                    className={cx(styles.switch, form.leadership && styles.switchOn)}
+                    onClick={() => field('leadership', !form.leadership)}
+                    title={form.leadership ? 'Shown on Leadership — click to remove' : 'Not shown on Leadership — click to add'}
+                  >
+                    <span className={styles.knob} />
+                  </button>
+                </div>
+                {form.leadership && (
+                  <div className={styles.editGrid} style={{ marginTop: 14 }}>
+                    <div className={styles.editField}>
+                      <label className={styles.editLabel}>Leadership title / role at MMC</label>
+                      <input className={styles.editInput} type="text" value={form.leadershipTitle || ''} onChange={e => field('leadershipTitle', e.target.value)} placeholder="President" />
+                    </div>
+                    <div className={cx(styles.editField, styles.editHalf)}>
+                      <label className={styles.editLabel}>Link label</label>
+                      <input className={styles.editInput} type="text" value={form.leadershipLinkLabel || ''} onChange={e => field('leadershipLinkLabel', e.target.value)} placeholder="DrCarrieLeff.com" />
+                    </div>
+                    <div className={cx(styles.editField, styles.editHalf)}>
+                      <label className={styles.editLabel}>Link URL</label>
+                      <input className={styles.editInput} type="text" value={form.leadershipLinkUrl || ''} onChange={e => field('leadershipLinkUrl', e.target.value)} placeholder="https://drcarrieleff.com" />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className={styles.dsection}>

@@ -2,13 +2,56 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonCard } from "@/components/PersonCard";
 import { FOUNDING_MEMBERS, LEADERSHIP } from "@/lib/data";
+import type { Person } from "@/lib/data";
 import { getContent } from "@/lib/admin-db";
+import { getCheckinRoster } from "@/lib/checkin-db";
+import type { CheckinMember } from "@/lib/checkin-data";
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Leadership" };
 
+const BLOB_ORIGIN = "https://bfbwrnmnnw2zzg0c.private.blob.vercel-storage.com/";
+
+/** Private blob photos must go through the /api/img proxy (auth token);
+ *  local /assets paths and other absolute URLs render directly. */
+function photoSrc(url?: string): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith(BLOB_ORIGIN)) return `/api/img?url=${encodeURIComponent(url)}`;
+  return url;
+}
+
+/** Roster member flagged "Show as Leadership" → the public Person card shape. */
+function toPerson(m: CheckinMember): Person {
+  const name = [m.prefix, m.first, m.last].filter(Boolean).join(" ").trim();
+  const linkUrl = (m.leadershipLinkUrl || "").trim();
+  return {
+    role: (m.leadershipTitle || "").trim() || "Board member",
+    name,
+    credentials: m.cred || "",
+    practice: m.practice || "",
+    bio: "",
+    photo: photoSrc(m.photo),
+    link: linkUrl
+      ? { label: (m.leadershipLinkLabel || "").trim() || linkUrl.replace(/^https?:\/\//, ""), url: linkUrl }
+      : undefined,
+  };
+}
+
 export default async function LeadershipPage() {
-  const content = await getContent();
+  const [content, roster] = await Promise.all([getContent(), getCheckinRoster()]);
+
+  // Leaders are managed from the admin Membership panel ("Show as Leadership").
+  // Fall back to the static founding list if none have been flagged yet, so the
+  // page is never empty.
+  const flagged = roster
+    .filter((m) => m.leadership)
+    .sort(
+      (a, b) =>
+        (a.leadershipOrder ?? 999) - (b.leadershipOrder ?? 999) ||
+        (a.last || "").localeCompare(b.last || ""),
+    );
+  const leaders: Person[] = flagged.length > 0 ? flagged.map(toPerson) : LEADERSHIP;
+
   return (
     <>
       <PageHeader
@@ -18,8 +61,8 @@ export default async function LeadershipPage() {
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
-        {LEADERSHIP.map((p) => (
-          <PersonCard key={p.role} p={p} />
+        {leaders.map((p, i) => (
+          <PersonCard key={`${p.role}-${p.name}-${i}`} p={p} />
         ))}
 
         {/* Founding Members */}
