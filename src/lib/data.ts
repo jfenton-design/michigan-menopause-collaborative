@@ -194,7 +194,7 @@ export const RESOURCES: Resource[] = [
     type: "Meeting notes",
     title: "Summer 2026 meeting — case discussion summary",
     citation: "July 21, 2026 · Danialle's Clubhouse, Birmingham",
-    status: "current",
+    status: "archive",
   },
   {
     quarter: "Spring 2026",
