@@ -491,6 +491,7 @@ function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhot
       spec: form.spec, ptype: form.ptype, mscp: form.mscp, consent: form.consent, notes: form.notes,
       leadership: !!form.leadership,
       leadershipTitle: (form.leadershipTitle || '').trim(),
+      leadershipBio: (form.leadershipBio || '').trim(),
       leadershipLinkLabel: (form.leadershipLinkLabel || '').trim(),
       leadershipLinkUrl: (form.leadershipLinkUrl || '').trim(),
     });
@@ -598,6 +599,10 @@ function ProfileDrawer({ member, meetings, startEditing, onClose, onCopy, onPhot
                     <div className={styles.editField}>
                       <label className={styles.editLabel}>Leadership title / role at MMC</label>
                       <input className={styles.editInput} type="text" value={form.leadershipTitle || ''} onChange={e => field('leadershipTitle', e.target.value)} placeholder="President" />
+                    </div>
+                    <div className={styles.editField}>
+                      <label className={styles.editLabel}>Bio / responsibilities</label>
+                      <textarea className={styles.editInput} style={{ resize: 'vertical' }} rows={4} value={form.leadershipBio || ''} onChange={e => field('leadershipBio', e.target.value)} placeholder="Shown under their name on the Leadership page — a short bio or what they oversee for MMC." />
                     </div>
                     <div className={cx(styles.editField, styles.editHalf)}>
                       <label className={styles.editLabel}>Link label</label>

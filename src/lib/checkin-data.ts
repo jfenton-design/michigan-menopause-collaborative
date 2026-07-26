@@ -29,6 +29,7 @@ export type CheckinMember = {
   // Membership panel). Absent/false = normal member, not shown as leadership.
   leadership?: boolean;
   leadershipTitle?: string;      // e.g. "President", "Vice President"
+  leadershipBio?: string;        // bio / responsibilities, shown under the name
   leadershipLinkLabel?: string;  // e.g. "DrCarrieLeff.com"
   leadershipLinkUrl?: string;    // e.g. "https://drcarrieleff.com"
   leadershipOrder?: number;      // manual sort on the public page (lower = first)
