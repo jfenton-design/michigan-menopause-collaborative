@@ -20,6 +20,16 @@ function photoSrc(url?: string): string | undefined {
   return url;
 }
 
+/** Sort rank by role: President first (0), Vice President second (1), all
+ *  others last (2). Others keep their roster (insertion) order via a stable
+ *  sort, so newly added leaders appear at the bottom. */
+function leadershipRank(title?: string): number {
+  const t = (title || "").trim().toLowerCase();
+  if (t === "president") return 0;
+  if (t === "vice president" || t === "vice-president" || t === "vp") return 1;
+  return 2;
+}
+
 /** Roster member flagged "Show as Leadership" → the public Person card shape. */
 function toPerson(m: CheckinMember): Person {
   const name = [m.prefix, m.first, m.last].filter(Boolean).join(" ").trim();
@@ -41,15 +51,15 @@ export default async function LeadershipPage() {
   const [content, roster] = await Promise.all([getContent(), getCheckinRoster()]);
 
   // Leaders are managed from the admin Membership panel ("Show as Leadership").
+  // Order: President first, Vice President second, then everyone else in the
+  // order they were added to the roster (new members land at the bottom, never
+  // the top). Array.prototype.sort is stable, so sorting by rank alone preserves
+  // that insertion order within each rank.
   // Fall back to the static founding list if none have been flagged yet, so the
   // page is never empty.
   const flagged = roster
     .filter((m) => m.leadership)
-    .sort(
-      (a, b) =>
-        (a.leadershipOrder ?? 999) - (b.leadershipOrder ?? 999) ||
-        (a.last || "").localeCompare(b.last || ""),
-    );
+    .sort((a, b) => leadershipRank(a.leadershipTitle) - leadershipRank(b.leadershipTitle));
   const leaders: Person[] = flagged.length > 0 ? flagged.map(toPerson) : LEADERSHIP;
 
   return (

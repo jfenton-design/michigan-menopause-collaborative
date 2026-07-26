@@ -32,7 +32,6 @@ export type CheckinMember = {
   leadershipBio?: string;        // bio / responsibilities, shown under the name
   leadershipLinkLabel?: string;  // e.g. "DrCarrieLeff.com"
   leadershipLinkUrl?: string;    // e.g. "https://drcarrieleff.com"
-  leadershipOrder?: number;      // manual sort on the public page (lower = first)
 };
 
 export const CHECKIN_SEED: CheckinMember[] = [
