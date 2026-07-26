@@ -67,9 +67,6 @@ export default async function HomePage() {
           <Link href="/meetings" className="btn btn--accent">
             See the next meeting →
           </Link>
-          <Link href="/members" className="btn btn--ghost">
-            Browse the directory
-          </Link>
         </div>
       </section>
 

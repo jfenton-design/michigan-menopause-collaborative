@@ -73,6 +73,11 @@ export async function GET(req: NextRequest) {
     const id = req.nextUrl.searchParams.get('id');
     if (!id) return new Response('Missing ?id', { status: 400 });
 
+    // Two social-asset compositions: the default text-forward card, and a
+    // "photo" variant that leads with the founding-meeting photograph from the
+    // homepage — more editorial without getting cramped.
+    const variant = req.nextUrl.searchParams.get('variant') === 'photo' ? 'photo' : 'default';
+
     const token = process.env.BLOB_READ_WRITE_TOKEN ?? '';
     const staticAll = [...UPCOMING_MEETINGS, ...PAST_MEETINGS];
 
@@ -122,6 +127,18 @@ export async function GET(req: NextRequest) {
       } catch { /* ignore */ }
     }
 
+    // Founding-meeting photograph (homepage hero) — only needed for the photo variant.
+    let photoSrc: string | null = null;
+    if (variant === 'photo') {
+      try {
+        const res = await fetch(new URL('/assets/founding-meeting.jpg', req.nextUrl.origin).toString());
+        if (res.ok) {
+          const mime = res.headers.get('content-type') ?? 'image/jpeg';
+          photoSrc = toDataImg(await res.arrayBuffer(), mime);
+        }
+      } catch { /* ignore — fall back to the light header if the photo can't load */ }
+    }
+
     const topic = meeting.topic ?? '';
     const cTopicSize = topic.length > 64 ? 30 : topic.length > 44 ? 34 : 40;
     const hasSpeaker = !!(speakerSrc || meeting.topicPresenter);
@@ -146,122 +163,167 @@ export async function GET(req: NextRequest) {
     const ACCENT = '#6D3BE4';
     const PAPER  = '#F6F2EB';
 
-    return new ImageResponse(
-      (
-        <div style={{ width: 1080, height: 1080, display: 'flex', flexDirection: 'column', fontFamily: 'DM Sans' }}>
+    // If the photo variant was requested but the image couldn't load, fall back
+    // to the default text-forward composition rather than a blank header.
+    const usephoto = variant === 'photo' && !!photoSrc;
 
-          {/* ── UPPER LIGHT SECTION (Option C) ── */}
-          <div style={{ background: PAPER, display: 'flex', flexDirection: 'column', flex: 1, padding: '64px 64px 0', position: 'relative' }}>
+    // ── Shared fragments ─────────────────────────────────────────────────────
+    const watermark = (
+      <div style={{ position: 'absolute', right: -140, bottom: -140, display: 'flex', opacity: 0.08 }}>
+        <svg width="820" height="820" viewBox="-65 -65 130 130">
+          {PETAL_ANGLES.map(a => (
+            <path key={a} d={PETAL_PATH} fill={ACCENT} transform={`rotate(${a})`} />
+          ))}
+          <circle r="30" fill="none" stroke={ACCENT} strokeWidth="1.5" />
+        </svg>
+      </div>
+    );
 
-            {/* WATERMARK — large faded BloomMark, petals + circle, no text */}
-            <div style={{ position: 'absolute', right: -140, bottom: -140, display: 'flex', opacity: 0.08 }}>
-              <svg width="820" height="820" viewBox="-65 -65 130 130">
-                {PETAL_ANGLES.map(a => (
-                  <path key={a} d={PETAL_PATH} fill={ACCENT} transform={`rotate(${a})`} />
-                ))}
-                <circle r="30" fill="none" stroke={ACCENT} strokeWidth="1.5" />
-              </svg>
-            </div>
-
-            {/* BIG HORIZONTAL LOCKUP — mark + wordmark, upper-left */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 34, marginBottom: 48 }}>
-              <div style={{ position: 'relative', width: 204, height: 204, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="204" height="204" viewBox="-65 -65 130 130" style={{ position: 'absolute', top: 0, left: 0, display: 'flex' }}>
-                  {PETAL_ANGLES.map(a => (
-                    <g key={a} transform={`rotate(${a})`}>
-                      <path d={PETAL_PATH} fill={ACCENT} />
-                    </g>
-                  ))}
-                  <circle r="30" fill="none" stroke={INK} strokeWidth="1.8" />
-                </svg>
-                <span style={{ display: 'flex', position: 'relative', fontSize: 29, fontWeight: 700, color: INK, letterSpacing: '-0.02em' }}>MMC</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ display: 'flex', fontSize: 56, fontWeight: 500, letterSpacing: '-0.02em', color: INK, lineHeight: 1.04 }}>Michigan Menopause</span>
-                <span style={{ display: 'flex', fontSize: 56, fontWeight: 500, letterSpacing: '-0.02em', color: INK, lineHeight: 1.04 }}>Collaborative</span>
-              </div>
-            </div>
-
-            {/* MISSION TAGLINE */}
-            <div style={{ display: 'flex', flexDirection: 'column', fontSize: 32, fontWeight: 700, color: INK, lineHeight: 1.3 }}>
-              <span style={{ display: 'flex' }}>Join the clinicians elevating the care</span>
-              <span style={{ display: 'flex' }}>of midlife women in Southeast Michigan.</span>
-            </div>
-
-            {/* MEET BLOCK — date / topic / speaker, stacked top-down */}
-            <div style={{ display: 'flex', flexDirection: 'column', marginTop: 52 }}>
-
-              {/* SUMMER MEETING + date */}
-              <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 34 }}>
-                <span style={{ display: 'flex', fontSize: 15, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 14 }}>{eyebrowLabel}</span>
-                <span style={{ display: 'flex', fontSize: 34, fontWeight: 700, color: INK }}>{dateLine}</span>
-              </div>
-
-              {/* FEATURED TOPIC */}
-              {meeting.topic && (
-                <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 36 }}>
-                  <span style={{ display: 'flex', fontSize: 15, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 14 }}>FEATURED TOPIC</span>
-                  <span style={{ display: 'flex', fontSize: cTopicSize, fontWeight: 700, lineHeight: 1.12, color: INK }}>{topic}</span>
-                </div>
-              )}
-
-              {/* PRESENTING — speaker */}
-              {hasSpeaker && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                  {speakerSrc ? (
-                    <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `3px solid ${ACCENT}`, display: 'flex' }}>
-                      <img src={speakerSrc} style={{ width: 80, height: 80, objectFit: 'cover' }} />
-                    </div>
-                  ) : (
-                    <div style={{
-                      width: 80, height: 80, borderRadius: '50%', flexShrink: 0,
-                      background: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 28, fontWeight: 700, color: 'white',
-                    }}>{initials}</div>
-                  )}
-                  {meeting.topicPresenter && (
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ display: 'flex', fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 6 }}>PRESENTING</span>
-                      <span style={{ display: 'flex', fontSize: 26, fontWeight: 700, color: INK }}>{meeting.topicPresenter}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-            </div>
-          </div>
-
-          {/* ── DARK BOTTOM BAND — url / location / karmanos ── */}
-          <div style={{
-            background: INK, display: 'flex', alignItems: 'center',
-            padding: '32px 72px',
-          }}>
-            {/* URL */}
-            <div style={{ display: 'flex', flex: 1 }}>
-              <span style={{ display: 'flex', fontSize: 24, fontWeight: 700, color: 'white' }}>michiganmenopause.com</span>
-            </div>
-            {/* Vertical rule */}
-            <div style={{ width: 1, height: 64, background: 'rgba(255,255,255,0.18)', flexShrink: 0, marginRight: 48, marginLeft: 0 }} />
-            {/* Location + karmanos */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-              {karmanosSrc && meeting.showKarmanos !== false && (
-                <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.25)', display: 'flex' }}>
-                  <img src={karmanosSrc} style={{ width: 56, height: 56, objectFit: 'cover' }} />
-                </div>
-              )}
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {meeting.location.split('\n').map((line: string, i: number) => (
-                  <span key={i} style={{ display: 'flex', fontSize: i === 0 ? 22 : 18, fontWeight: i === 0 ? 700 : 400, color: 'white', marginBottom: i === 0 ? 5 : 0 }}>{line}</span>
-                ))}
-                {meeting.showKarmanos !== false && (
-                  <span style={{ display: 'flex', fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 8 }}>Thanks to Danialle Karmanos for donating the use of her space for our gathering!</span>
-                )}
-              </div>
-            </div>
-          </div>
-
+    const meetBlock = (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* SEASON MEETING + date */}
+        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 34 }}>
+          <span style={{ display: 'flex', fontSize: 15, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 14 }}>{eyebrowLabel}</span>
+          <span style={{ display: 'flex', fontSize: 34, fontWeight: 700, color: INK }}>{dateLine}</span>
         </div>
-      ),
+
+        {/* FEATURED TOPIC */}
+        {meeting.topic && (
+          <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 36 }}>
+            <span style={{ display: 'flex', fontSize: 15, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 14 }}>FEATURED TOPIC</span>
+            <span style={{ display: 'flex', fontSize: cTopicSize, fontWeight: 700, lineHeight: 1.12, color: INK }}>{topic}</span>
+          </div>
+        )}
+
+        {/* PRESENTING — speaker */}
+        {hasSpeaker && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {speakerSrc ? (
+              <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `3px solid ${ACCENT}`, display: 'flex' }}>
+                <img src={speakerSrc} style={{ width: 80, height: 80, objectFit: 'cover' }} />
+              </div>
+            ) : (
+              <div style={{
+                width: 80, height: 80, borderRadius: '50%', flexShrink: 0,
+                background: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 28, fontWeight: 700, color: 'white',
+              }}>{initials}</div>
+            )}
+            {meeting.topicPresenter && (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ display: 'flex', fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: ACCENT, marginBottom: 6 }}>PRESENTING</span>
+                <span style={{ display: 'flex', fontSize: 26, fontWeight: 700, color: INK }}>{meeting.topicPresenter}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+
+    const bottomBand = (
+      <div style={{ background: INK, display: 'flex', alignItems: 'center', padding: '32px 72px' }}>
+        <div style={{ display: 'flex', flex: 1 }}>
+          <span style={{ display: 'flex', fontSize: 24, fontWeight: 700, color: 'white' }}>michiganmenopause.com</span>
+        </div>
+        <div style={{ width: 1, height: 64, background: 'rgba(255,255,255,0.18)', flexShrink: 0, marginRight: 48, marginLeft: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+          {karmanosSrc && meeting.showKarmanos !== false && (
+            <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.25)', display: 'flex' }}>
+              <img src={karmanosSrc} style={{ width: 56, height: 56, objectFit: 'cover' }} />
+            </div>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {meeting.location.split('\n').map((line: string, i: number) => (
+              <span key={i} style={{ display: 'flex', fontSize: i === 0 ? 22 : 18, fontWeight: i === 0 ? 700 : 400, color: 'white', marginBottom: i === 0 ? 5 : 0 }}>{line}</span>
+            ))}
+            {meeting.showKarmanos !== false && (
+              <span style={{ display: 'flex', fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 8 }}>Thanks to Danialle Karmanos for donating the use of her space for our gathering!</span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+
+    // Compact white lockup used over the photo (photo variant only).
+    const whiteLockup = (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div style={{ position: 'relative', width: 88, height: 88, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="88" height="88" viewBox="-65 -65 130 130" style={{ position: 'absolute', top: 0, left: 0, display: 'flex' }}>
+            {PETAL_ANGLES.map(a => (
+              <path key={a} d={PETAL_PATH} fill="white" transform={`rotate(${a})`} />
+            ))}
+            <circle r="30" fill="none" stroke="white" strokeWidth="2" />
+          </svg>
+          <span style={{ display: 'flex', position: 'relative', fontSize: 13, fontWeight: 700, color: INK, letterSpacing: '-0.02em' }}>MMC</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ display: 'flex', fontSize: 30, fontWeight: 600, letterSpacing: '-0.02em', color: 'white', lineHeight: 1.05 }}>Michigan Menopause</span>
+          <span style={{ display: 'flex', fontSize: 30, fontWeight: 600, letterSpacing: '-0.02em', color: 'white', lineHeight: 1.05 }}>Collaborative</span>
+        </div>
+      </div>
+    );
+
+    // ── Layout: default (text-forward) ───────────────────────────────────────
+    const defaultLayout = (
+      <div style={{ width: 1080, height: 1080, display: 'flex', flexDirection: 'column', fontFamily: 'DM Sans' }}>
+        <div style={{ background: PAPER, display: 'flex', flexDirection: 'column', flex: 1, padding: '64px 64px 0', position: 'relative' }}>
+          {watermark}
+          {/* BIG HORIZONTAL LOCKUP — mark + wordmark, upper-left */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 34, marginBottom: 48 }}>
+            <div style={{ position: 'relative', width: 204, height: 204, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="204" height="204" viewBox="-65 -65 130 130" style={{ position: 'absolute', top: 0, left: 0, display: 'flex' }}>
+                {PETAL_ANGLES.map(a => (
+                  <g key={a} transform={`rotate(${a})`}>
+                    <path d={PETAL_PATH} fill={ACCENT} />
+                  </g>
+                ))}
+                <circle r="30" fill="none" stroke={INK} strokeWidth="1.8" />
+              </svg>
+              <span style={{ display: 'flex', position: 'relative', fontSize: 29, fontWeight: 700, color: INK, letterSpacing: '-0.02em' }}>MMC</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ display: 'flex', fontSize: 56, fontWeight: 500, letterSpacing: '-0.02em', color: INK, lineHeight: 1.04 }}>Michigan Menopause</span>
+              <span style={{ display: 'flex', fontSize: 56, fontWeight: 500, letterSpacing: '-0.02em', color: INK, lineHeight: 1.04 }}>Collaborative</span>
+            </div>
+          </div>
+          {/* MISSION TAGLINE */}
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: 32, fontWeight: 700, color: INK, lineHeight: 1.3 }}>
+            <span style={{ display: 'flex' }}>Join the clinicians elevating the care</span>
+            <span style={{ display: 'flex' }}>of midlife women in Southeast Michigan.</span>
+          </div>
+          <div style={{ display: 'flex', marginTop: 52 }}>{meetBlock}</div>
+        </div>
+        {bottomBand}
+      </div>
+    );
+
+    // ── Layout: photo (leads with the founding-meeting photograph) ───────────
+    const photoLayout = (
+      <div style={{ width: 1080, height: 1080, display: 'flex', flexDirection: 'column', fontFamily: 'DM Sans' }}>
+        {/* PHOTO HERO */}
+        <div style={{ position: 'relative', width: 1080, height: 500, display: 'flex', overflow: 'hidden' }}>
+          <img src={photoSrc ?? ''} width={1080} height={500} style={{ width: 1080, height: 500, objectFit: 'cover', objectPosition: 'center 35%' }} />
+          {/* legibility gradient */}
+          <div style={{ position: 'absolute', top: 0, left: 0, width: 1080, height: 500, display: 'flex', background: 'linear-gradient(180deg, rgba(31,21,53,0.55) 0%, rgba(31,21,53,0.05) 34%, rgba(31,21,53,0.78) 100%)' }} />
+          {/* lockup over photo, top-left */}
+          <div style={{ position: 'absolute', top: 46, left: 64, display: 'flex' }}>{whiteLockup}</div>
+          {/* tagline over photo, bottom-left */}
+          <div style={{ position: 'absolute', left: 64, right: 64, bottom: 44, display: 'flex', flexDirection: 'column', fontSize: 34, fontWeight: 700, color: 'white', lineHeight: 1.24 }}>
+            <span style={{ display: 'flex' }}>Join the clinicians elevating the care</span>
+            <span style={{ display: 'flex' }}>of midlife women in Southeast Michigan.</span>
+          </div>
+        </div>
+        {/* LIGHT CONTENT */}
+        <div style={{ background: PAPER, display: 'flex', flexDirection: 'column', flex: 1, padding: '48px 64px 0', position: 'relative' }}>
+          {watermark}
+          {meetBlock}
+        </div>
+        {bottomBand}
+      </div>
+    );
+
+    return new ImageResponse(
+      usephoto ? photoLayout : defaultLayout,
       {
         width: 1080,
         height: 1080,

@@ -24,6 +24,14 @@ export type CheckinMember = {
   seasons: Record<string, CheckinStatus>;
   rsvp: Record<string, RsvpValue>;
   edited: boolean;
+  // Public Leadership page. When `leadership` is true this person is shown on
+  // /leadership with the title + optional link below (managed from the admin
+  // Membership panel). Absent/false = normal member, not shown as leadership.
+  leadership?: boolean;
+  leadershipTitle?: string;      // e.g. "President", "Vice President"
+  leadershipLinkLabel?: string;  // e.g. "DrCarrieLeff.com"
+  leadershipLinkUrl?: string;    // e.g. "https://drcarrieleff.com"
+  leadershipOrder?: number;      // manual sort on the public page (lower = first)
 };
 
 export const CHECKIN_SEED: CheckinMember[] = [

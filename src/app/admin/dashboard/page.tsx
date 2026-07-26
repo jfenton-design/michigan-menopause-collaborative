@@ -527,23 +527,33 @@ export default async function DashboardPage({
                           <a href="/admin/dashboard#meetings" style={{ ...s.deleteBtn, color: '#5a5168', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>Cancel</a>
                         </div>
 
-                        {/* Social image preview (reflects saved state) */}
+                        {/* Social image previews (reflect saved state) — two variants */}
                         <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid #ede9f7' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                            <span style={{ ...s.label, marginBottom: 0 }}>Social image preview <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(reflects saved state)</span></span>
-                            <a
-                              href={`/api/og?id=${m.id}`}
-                              download={`mmc-${m.id}-social.png`}
-                              style={{ ...s.submitBtn, textDecoration: 'none', fontSize: 13, padding: '8px 16px' }}
-                            >
-                              Download PNG →
-                            </a>
+                          <span style={{ ...s.label }}>Social images <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(reflect saved state)</span></span>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                            {([
+                              { key: 'default', label: 'Text card', qs: '' },
+                              { key: 'photo', label: 'Photo card', qs: '&variant=photo' },
+                            ] as const).map(v => (
+                              <div key={v.key}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                                  <span style={{ fontSize: 12, fontWeight: 600, color: '#5a5168' }}>{v.label}</span>
+                                  <a
+                                    href={`/api/og?id=${m.id}${v.qs}`}
+                                    download={`mmc-${m.id}-${v.key}-social.png`}
+                                    style={{ ...s.submitBtn, textDecoration: 'none', fontSize: 12, padding: '6px 12px' }}
+                                  >
+                                    Download →
+                                  </a>
+                                </div>
+                                <img
+                                  src={`/api/og?id=${m.id}${v.qs}`}
+                                  alt={`${v.label} social image preview`}
+                                  style={{ width: '100%', borderRadius: 8, border: '1px solid #ede9f7', display: 'block' }}
+                                />
+                              </div>
+                            ))}
                           </div>
-                          <img
-                            src={`/api/og?id=${m.id}`}
-                            alt="Social media image preview"
-                            style={{ width: '100%', borderRadius: 8, border: '1px solid #ede9f7', display: 'block' }}
-                          />
                         </div>
                       </form>
                     ) : (
@@ -562,6 +572,7 @@ export default async function DashboardPage({
                         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                           <a href={`/admin/dashboard?editM=${m.id}#meetings`} style={{ ...s.deleteBtn, color: '#5a5168', textDecoration: 'none' }}>Edit</a>
                           <a href={`/api/og?id=${m.id}`} target="_blank" rel="noopener noreferrer" style={{ ...s.deleteBtn, color: '#6D3BE4', textDecoration: 'none' }}>Social ↗</a>
+                          <a href={`/api/og?id=${m.id}&variant=photo`} target="_blank" rel="noopener noreferrer" style={{ ...s.deleteBtn, color: '#6D3BE4', textDecoration: 'none' }}>Photo ↗</a>
                           <form action={deleteMeeting}>
                             <input type="hidden" name="id" value={m.id} />
                             <button type="submit" style={s.deleteBtn}>Delete</button>
