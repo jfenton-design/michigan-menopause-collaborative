@@ -77,7 +77,7 @@ const miniCopy: React.CSSProperties = { border: '1.5px solid #d8d3e8', backgroun
 
 /** Branded recap-email builder for a meeting's attendees. `emails` is the
  *  currently-selected audience (used for the recipient-copy convenience). */
-export function MeetingRecap({ meeting, emails, onCopy }: { meeting: Meeting; emails: string[]; onCopy: (t: string, l: string) => void }) {
+export function MeetingRecap({ meeting, emails, onCopy, bare = false }: { meeting: Meeting; emails: string[]; onCopy: (t: string, l: string) => void; bare?: boolean }) {
   const [subject, setSubject] = React.useState(defaultRecapSubject(meeting));
   const [intro, setIntro] = React.useState(defaultRecapIntro(meeting));
   const [bulletsText, setBulletsText] = React.useState('');
@@ -129,11 +129,8 @@ export function MeetingRecap({ meeting, emails, onCopy }: { meeting: Meeting; em
     }
   }
 
-  return (
-    <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', padding: '22px 24px', marginTop: 16 }}>
-      <h2 style={{ fontSize: 18, fontWeight: 600, margin: '0 0 4px', color: '#1F1535' }}>Recap email</h2>
-      <p style={{ fontSize: 13, color: '#7a6e8a', margin: '0 0 16px' }}>A branded thank-you for the {meeting.quarter} attendees. Edit, copy, and paste into Gmail.</p>
-
+  const inner = (
+    <>
       <div style={{ display: 'grid', gap: 16 }}>
         <div>
           <label style={label}>Subject line</label>
@@ -171,6 +168,19 @@ export function MeetingRecap({ meeting, emails, onCopy }: { meeting: Meeting; em
 
       <label style={label}>Preview</label>
       <div ref={previewRef} contentEditable suppressContentEditableWarning style={{ border: '1.5px solid #d8d3e8', borderRadius: 8, overflow: 'hidden', cursor: 'text' }} dangerouslySetInnerHTML={{ __html: html }} />
+    </>
+  );
+
+  // `bare` embeds the builder inside another card (the Emails/Social hub already
+  // supplies the card + heading). The default keeps its own card + heading for
+  // the Check-In flow.
+  if (bare) return inner;
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', padding: '22px 24px', marginTop: 16 }}>
+      <h2 style={{ fontSize: 18, fontWeight: 600, margin: '0 0 4px', color: '#1F1535' }}>Recap email</h2>
+      <p style={{ fontSize: 13, color: '#7a6e8a', margin: '0 0 16px' }}>A branded thank-you for the {meeting.quarter} attendees. Edit, copy, and paste into Gmail.</p>
+      {inner}
     </div>
   );
 }

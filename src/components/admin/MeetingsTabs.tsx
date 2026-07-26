@@ -5,7 +5,7 @@ export type MeetingsTab = 'schedule' | 'resources' | 'recap' | 'checkin';
 const TABS: { key: MeetingsTab; label: string; href: string }[] = [
   { key: 'schedule',  label: 'Schedule',    href: '/admin/dashboard/meetings' },
   { key: 'resources', label: 'Resources',   href: '/admin/dashboard/meetings/resources' },
-  { key: 'recap',     label: 'Recap Email', href: '/admin/dashboard/meetings/recap' },
+  { key: 'recap',     label: 'Emails / Social', href: '/admin/dashboard/meetings/recap' },
   { key: 'checkin',   label: 'Check-In',    href: '/admin/dashboard/meetings/checkin' },
 ];
 
