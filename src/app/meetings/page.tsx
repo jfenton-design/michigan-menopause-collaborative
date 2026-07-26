@@ -70,51 +70,6 @@ export default async function MeetingsPage() {
 
       <section className="page section">
         <SectionHeading
-          eyebrow="The cadence"
-          title="A rhythm built around the year"
-        />
-        <div
-          className="grid-4"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-            gap: 24,
-          }}
-        >
-          {[
-            { season: "Spring", month: "April", note: content.cadence_spring_note, aside: content.cadence_spring_aside },
-            { season: "Summer", month: "July",  note: content.cadence_summer_note, aside: content.cadence_summer_aside },
-            { season: "Fall",   month: "Sept",  note: content.cadence_fall_note,   aside: content.cadence_fall_aside },
-            { season: "Winter", month: "Jan",   note: content.cadence_winter_note, aside: content.cadence_winter_aside },
-          ].map((q) => (
-            <div
-              key={q.season}
-              style={{ borderTop: "1px solid var(--rule-strong)", paddingTop: 20 }}
-            >
-              <div className="eyebrow" style={{ color: "var(--accent)" }}>
-                {q.season}
-              </div>
-              <div
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: 34,
-                  lineHeight: 1,
-                  marginTop: 10,
-                }}
-              >
-                {q.month}
-              </div>
-              <div style={{ marginTop: 14, fontSize: 15 }}>{q.note}</div>
-              <div style={{ marginTop: 6, fontSize: 13, color: "var(--ink-soft)" }}>
-                {q.aside}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="page section">
-        <SectionHeading
           eyebrow="Past meetings"
           title="The collaborative, looking back"
         />
