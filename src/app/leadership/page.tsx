@@ -29,7 +29,7 @@ function toPerson(m: CheckinMember): Person {
     name,
     credentials: m.cred || "",
     practice: m.practice || "",
-    bio: "",
+    bio: (m.leadershipBio || "").trim(),
     photo: photoSrc(m.photo),
     link: linkUrl
       ? { label: (m.leadershipLinkLabel || "").trim() || linkUrl.replace(/^https?:\/\//, ""), url: linkUrl }
