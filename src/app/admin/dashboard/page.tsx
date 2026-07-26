@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { BloomMark } from '@/components/Logo';
-import { getResources, getMeetings, getMembers, getContent } from '@/lib/admin-db';
-import { SPECIALTIES } from '@/lib/data';
+import { getResources, getMeetings, getContent } from '@/lib/admin-db';
 import { EmailTemplateBuilder } from './EmailTemplateBuilder';
 import {
   logout,
@@ -11,8 +10,6 @@ import {
   createMeeting,
   editMeeting,
   deleteMeeting,
-  addMember,
-  deleteMember,
   editContent,
 } from './actions';
 
@@ -104,15 +101,12 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ saved?: string; edit?: string; editM?: string }>;
 }) {
-  const [{ saved, edit, editM }, resources, meetings, members, content] = await Promise.all([
+  const [{ saved, edit, editM }, resources, meetings, content] = await Promise.all([
     searchParams,
     getResources(),
     getMeetings(),
-    getMembers(),
     getContent(),
   ]);
-
-  const memberSpecialties = SPECIALTIES.filter(s => s !== 'All specialties');
 
   return (
     <div style={s.page}>
@@ -149,7 +143,6 @@ export default async function DashboardPage({
           {[
             { label: 'Resources', href: '#resources' },
             { label: 'Meetings',  href: '#meetings' },
-            { label: 'Members',   href: '#members' },
             { label: 'Email',     href: '#email' },
             { label: 'Content',   href: '#content' },
           ].map(({ label, href }) => (
@@ -580,63 +573,6 @@ export default async function DashboardPage({
                         </div>
                       </div>
                     )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* ── MEMBERS ── */}
-        <div id="members" style={s.card}>
-          <h2 style={s.sectionTitle}>Members</h2>
-
-          <form action={addMember}>
-            <div style={s.grid2}>
-              <div style={s.fieldGroup}>
-                <label style={s.label}>Full name</label>
-                <input name="name" required style={s.input} placeholder="Dr. A. Whitfield" />
-              </div>
-              <div style={s.fieldGroup}>
-                <label style={s.label}>Credentials</label>
-                <input name="credentials" required style={s.input} placeholder="MD · MSCP" />
-              </div>
-            </div>
-            <div style={s.grid2}>
-              <div style={s.fieldGroup}>
-                <label style={s.label}>Specialty</label>
-                <select name="specialty" required style={s.input}>
-                  {memberSpecialties.map(sp => <option key={sp}>{sp}</option>)}
-                </select>
-              </div>
-              <div style={s.fieldGroup}>
-                <label style={s.label}>Location (city)</label>
-                <input name="location" required style={s.input} placeholder="Birmingham" />
-              </div>
-            </div>
-            <div style={s.fieldGroup}>
-              <label style={s.label}>Practice / website</label>
-              <input name="practice" required style={s.input} placeholder="whitfieldwomen.com" />
-            </div>
-            <button type="submit" style={s.submitBtn}>Add member</button>
-          </form>
-
-          {members.length > 0 && (
-            <>
-              <div style={s.divider} />
-              <div>
-                {members.map((m, i) => (
-                  <div key={i} style={s.row}>
-                    <div>
-                      <span style={{ fontWeight: 500, fontSize: 14 }}>{m.name}</span>
-                      <span style={{ marginLeft: 10, fontSize: 13, color: '#7a6e8a' }}>
-                        {m.specialty} · {m.location}
-                      </span>
-                    </div>
-                    <form action={deleteMember}>
-                      <input type="hidden" name="name" value={m.name} />
-                      <button type="submit" style={s.deleteBtn}>Delete</button>
-                    </form>
                   </div>
                 ))}
               </div>
