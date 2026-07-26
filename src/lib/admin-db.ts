@@ -73,7 +73,12 @@ export async function saveMembers(members: Member[]): Promise<void> {
 }
 
 export async function getContent(): Promise<SiteContent> {
-  return readData<SiteContent>('mmc/content.json', DEFAULT_CONTENT);
+  // Merge defaults over the stored copy so newly added fields (e.g. a new
+  // home_hero_image) are always present, even when content.json was saved
+  // before that field existed. Without this, reading a missing field crashes
+  // pages that assume every SiteContent key is set.
+  const stored = await readData<Partial<SiteContent>>('mmc/content.json', {});
+  return { ...DEFAULT_CONTENT, ...stored };
 }
 
 export async function saveContent(content: SiteContent): Promise<void> {

@@ -23,6 +23,7 @@ export default async function WebsiteContentPage({
   searchParams: Promise<{ saved?: string }>;
 }) {
   const [{ saved }, content] = await Promise.all([searchParams, getContent()]);
+  const heroImage = content.home_hero_image || '/assets/founding-meeting.jpg';
 
   return (
     <div style={s.page}>
@@ -50,12 +51,12 @@ export default async function WebsiteContentPage({
               <div style={{ ...s.label, marginBottom: 8 }}>Currently on the site</div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={imgSrc(content.home_hero_image)}
+                src={imgSrc(heroImage)}
                 alt="Current homepage hero"
                 style={{ width: 320, maxWidth: '100%', aspectRatio: '2000 / 960', objectFit: 'cover', borderRadius: 8, border: '1px solid #ede9f7', display: 'block' }}
               />
               <div style={{ fontSize: 12, color: '#9a90ac', marginTop: 6 }}>
-                {content.home_hero_image.startsWith('/assets/')
+                {heroImage.startsWith('/assets/')
                   ? 'Default founding-meeting photo'
                   : 'Custom uploaded image'}
               </div>
