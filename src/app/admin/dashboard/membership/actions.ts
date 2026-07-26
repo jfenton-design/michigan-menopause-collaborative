@@ -194,7 +194,7 @@ export async function syncRsvpsFromSheet(): Promise<SyncResult> {
   }
 
   revalidatePath('/admin/dashboard/membership');
-  revalidatePath('/admin/dashboard/checkin');
+  revalidatePath('/admin/dashboard/meetings/checkin');
 
   const bits = [`${added} added`, `${updated} updated`, `${rsvpsApplied} RSVP${rsvpsApplied === 1 ? '' : 's'} applied`];
   if (unmatchedMeeting) bits.push(`${unmatchedMeeting} row${unmatchedMeeting === 1 ? '' : 's'} skipped (unrecognized meeting)`);
@@ -211,5 +211,5 @@ export async function syncRsvpsFromSheet(): Promise<SyncResult> {
 export async function persistRoster(roster: CheckinMember[]): Promise<void> {
   await saveCheckinRoster(roster);
   revalidatePath('/admin/dashboard/membership');
-  revalidatePath('/admin/dashboard/checkin');
+  revalidatePath('/admin/dashboard/meetings/checkin');
 }

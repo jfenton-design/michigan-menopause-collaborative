@@ -3,6 +3,8 @@ import * as React from 'react';
 import type { Meeting } from '@/lib/data';
 import type { CheckinMember, RsvpValue } from '@/lib/checkin-data';
 import { BloomMark } from '@/components/Logo';
+import { AdminHeader } from '@/components/admin/AdminHeader';
+import { MeetingsTabs } from '@/components/admin/MeetingsTabs';
 import { persistRoster, uploadCheckinPhoto } from './actions';
 import { MeetingRecap } from './MeetingRecap';
 import styles from './checkin.module.css';
@@ -297,35 +299,33 @@ export function CheckinClient({ initialMeetings, initialRoster }: { initialMeeti
 
   return (
     <div className={styles.wrap}>
-      <header className={styles.header}>
-        <div className={styles.hrow}>
-          <div className={styles.brand}>
-            <BloomMark dim={32} ink="white" accent="#9B6FFF" />
-            <div>
-              <h1 className={styles.title}>MMC Admin Panel</h1>
-              <p className={styles.sub}>Check-In</p>
-            </div>
-          </div>
-          {view === 'roster' && (
-            <div className={styles.sessionWrap}>
-              <label htmlFor="session">Meeting</label>
-              <select id="session" className={styles.sessionSelect} value={session} onChange={e => setSession(e.target.value)}>
+      <AdminHeader active="meetings" />
+      <MeetingsTabs active="checkin" />
+
+      <div className={styles.content}>
+        {view === 'roster' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+            <button
+              onClick={() => setView('events')}
+              style={{ border: 'none', background: 'none', color: '#6D3BE4', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
+            >
+              ← All events
+            </button>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label htmlFor="session" style={{ fontSize: 11, fontFamily: 'var(--font-plex-mono), monospace', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#5a5168' }}>Meeting</label>
+              <select
+                id="session"
+                value={session}
+                onChange={e => setSession(e.target.value)}
+                style={{ fontSize: 14, fontWeight: 500, padding: '8px 12px', borderRadius: 8, border: '1.5px solid #d8d3e8', background: '#fff', color: '#1F1535', minHeight: 38, fontFamily: 'inherit' }}
+              >
                 {meetings.map(mt => (
                   <option key={mt.id} value={mt.id}>{meetingLabel(mt)}</option>
                 ))}
               </select>
             </div>
-          )}
-        </div>
-        <div className={styles.navTabs}>
-          <a href="/admin/dashboard" className={cx(styles.navTab, styles.backlink)}>← Dashboard</a>
-          {view === 'roster' && (
-            <button className={cx(styles.navTab, styles.navTabActive)} onClick={() => setView('events')}>← All events</button>
-          )}
-        </div>
-      </header>
-
-      <div className={styles.content}>
+          </div>
+        )}
         {view === 'roster' && sessionMeeting && (
           <div className={styles.drillHead}>
             <h2 className={styles.drillTitle}>{meetingLabel(sessionMeeting)}</h2>

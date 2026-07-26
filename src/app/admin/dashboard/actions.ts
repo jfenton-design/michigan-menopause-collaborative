@@ -44,8 +44,8 @@ export async function uploadResource(formData: FormData) {
   const newResource: Resource = { quarter, type, title, citation, status: 'current', url };
   await saveResources([newResource, ...updated]);
   revalidatePath('/resources');
-  revalidatePath('/admin/dashboard');
-  redirect('/admin/dashboard?saved=1');
+  revalidatePath('/admin/dashboard/meetings/resources');
+  redirect('/admin/dashboard/meetings/resources?saved=1');
 }
 
 export async function editResource(formData: FormData) {
@@ -61,7 +61,7 @@ export async function editResource(formData: FormData) {
     r.title === originalTitle ? { ...r, title, quarter, type, citation, status } : r
   ));
   revalidatePath('/resources');
-  redirect('/admin/dashboard?saved=1');
+  redirect('/admin/dashboard/meetings/resources?saved=1');
 }
 
 export async function deleteResource(formData: FormData) {
@@ -73,7 +73,7 @@ export async function deleteResource(formData: FormData) {
   const resources = await getResources();
   await saveResources(resources.filter(r => r.title !== title));
   revalidatePath('/resources');
-  redirect('/admin/dashboard?saved=1');
+  redirect('/admin/dashboard/meetings/resources?saved=1');
 }
 
 // MEETINGS
@@ -94,7 +94,7 @@ export async function createMeeting(formData: FormData) {
   const meetings = await getMeetings();
   await saveMeetings([meeting, ...meetings]);
   revalidatePath('/meetings');
-  redirect('/admin/dashboard?saved=1');
+  redirect('/admin/dashboard/meetings?saved=1');
 }
 
 export async function editMeeting(formData: FormData) {
@@ -122,7 +122,7 @@ export async function editMeeting(formData: FormData) {
 
   const meetings = await getMeetings();
   const existing = meetings.find(m => m.id === id);
-  if (!existing) { redirect('/admin/dashboard'); return; }
+  if (!existing) { redirect('/admin/dashboard/meetings'); return; }
 
   let speakerPhoto = existing.speakerPhoto;
   let articleUrl = existing.articleUrl;
@@ -184,8 +184,8 @@ export async function editMeeting(formData: FormData) {
 
   await saveMeetings(meetings.map(m => m.id === id ? updated : m));
   revalidatePath('/meetings');
-  revalidatePath('/admin/dashboard');
-  redirect('/admin/dashboard?saved=1');
+  revalidatePath('/admin/dashboard/meetings');
+  redirect('/admin/dashboard/meetings?saved=1');
 }
 
 export async function deleteMeeting(formData: FormData) {
@@ -193,7 +193,7 @@ export async function deleteMeeting(formData: FormData) {
   const meetings = await getMeetings();
   await saveMeetings(meetings.filter(m => m.id !== id));
   revalidatePath('/meetings');
-  redirect('/admin/dashboard?saved=1');
+  redirect('/admin/dashboard/meetings?saved=1');
 }
 
 // SITE CONTENT
@@ -212,5 +212,16 @@ export async function editContent(formData: FormData) {
   revalidatePath('/resources');
   revalidatePath('/leadership');
   revalidatePath('/submit-a-case');
-  redirect('/admin/dashboard?saved=1');
+
+  // Return to the screen the copy was edited on. Allowlisted to avoid open redirects.
+  const CONTENT_RETURN_PATHS = [
+    '/admin/dashboard/content',
+    '/admin/dashboard/meetings',
+    '/admin/dashboard/meetings/resources',
+  ];
+  const requested = formData.get('redirectTo');
+  const target = typeof requested === 'string' && CONTENT_RETURN_PATHS.includes(requested)
+    ? requested
+    : '/admin/dashboard/content';
+  redirect(`${target}?saved=1`);
 }
