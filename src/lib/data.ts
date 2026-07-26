@@ -221,6 +221,7 @@ export type SiteContent = {
   home_hero_eyebrow: string;
   home_hero_lede: string;
   home_hero_tagline: string;
+  home_hero_image: string; // homepage hero photo (blob URL, or a /assets path)
   home_mission_lede: string;
   home_membership_text: string;
   // Meetings
@@ -256,6 +257,7 @@ export const DEFAULT_CONTENT: SiteContent = {
   home_hero_eyebrow: 'Est. 2026 · Southeast Michigan · A peer society',
   home_hero_lede: 'The Michigan Menopause Collaborative is a multidisciplinary network for clinicians caring for women in midlife. Four meetings a year. One focused topic. One article. A real case discussion. A collaborative space to learn, connect, and strengthen the care of our patients.',
   home_hero_tagline: 'Midlife women\'s care, improved together.',
+  home_hero_image: '/assets/founding-meeting.jpg',
   home_mission_lede: 'A multidisciplinary community of clinicians dedicated to improving care for women in midlife. Meeting in person four times a year for focused discussion, networking, and collaborative case-based learning.',
   home_membership_text: 'Open to licensed medical practitioners caring for midlife women in southeast Michigan. No fees while we operate informally; 501(c)(3) status is in development.',
   meetings_header_lede: 'We meet in person across the four seasons — fall, winter, spring, summer. Each meeting orbits a member-submitted case. Two hours. No vendors. Off the record.',

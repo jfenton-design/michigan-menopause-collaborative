@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { getContent } from '@/lib/admin-db';
-import { editContent } from '../actions';
+import { editContent, uploadHeroImage } from '../actions';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { SavedBanner } from '@/components/admin/SavedBanner';
 import { s } from '@/components/admin/formStyles';
@@ -9,6 +9,13 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Website Content · MMC Admin' };
 
 const REDIRECT_TO = '/admin/dashboard/content';
+
+// Private blob images render through the /api/img proxy (auth token); a local
+// /assets path (the default founding photo) renders directly.
+const BLOB_ORIGIN = 'https://bfbwrnmnnw2zzg0c.private.blob.vercel-storage.com/';
+function imgSrc(url: string): string {
+  return url.startsWith(BLOB_ORIGIN) ? `/api/img?url=${encodeURIComponent(url)}` : url;
+}
 
 export default async function WebsiteContentPage({
   searchParams,
@@ -29,6 +36,40 @@ export default async function WebsiteContentPage({
             The copy on the public site. Meeting and resource page copy lives under{' '}
             <strong>Meetings</strong>.
           </p>
+
+          {/* Hero image — its own form because it uploads a file (can't nest in
+              the text-content form below). */}
+          <h3 style={s.subheading}>Home hero image</h3>
+          <p style={{ fontSize: 13, color: '#7a6e8a', margin: '0 0 14px' }}>
+            The large photo on the homepage. Recommended: <strong>2000 × 960 px</strong>{' '}
+            (a wide landscape, roughly 2:1), <strong>JPEG or WebP</strong>, under ~1&nbsp;MB.
+            It&apos;s cropped to a wide banner, so keep the important part near the centre.
+          </p>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 16 }}>
+            <div>
+              <div style={{ ...s.label, marginBottom: 8 }}>Currently on the site</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imgSrc(content.home_hero_image)}
+                alt="Current homepage hero"
+                style={{ width: 320, maxWidth: '100%', aspectRatio: '2000 / 960', objectFit: 'cover', borderRadius: 8, border: '1px solid #ede9f7', display: 'block' }}
+              />
+              <div style={{ fontSize: 12, color: '#9a90ac', marginTop: 6 }}>
+                {content.home_hero_image.startsWith('/assets/')
+                  ? 'Default founding-meeting photo'
+                  : 'Custom uploaded image'}
+              </div>
+            </div>
+            <form action={uploadHeroImage} style={{ flex: 1, minWidth: 240 }}>
+              <div style={s.fieldGroup}>
+                <label style={s.label}>Upload a new hero image</label>
+                <input name="heroImage" type="file" accept="image/jpeg,image/png,image/webp" required style={{ ...s.input, padding: '8px 14px' }} />
+              </div>
+              <button type="submit" style={s.submitBtn}>Upload hero image</button>
+            </form>
+          </div>
+
+          <div style={s.divider} />
 
           <form action={editContent}>
             <input type="hidden" name="redirectTo" value={REDIRECT_TO} />
