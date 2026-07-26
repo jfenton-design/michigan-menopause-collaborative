@@ -60,7 +60,6 @@ export default async function MeetingsPage() {
       />
 
       <section className="page section" style={{ paddingTop: 24 }}>
-        <SectionHeading eyebrow="Upcoming" title="On the calendar" />
         {nextMeeting && <MeetingCard meeting={nextMeeting} variant="hero" />}
         <div style={{ marginTop: 80 }}>
           {upcoming.slice(1).map((m) => (
