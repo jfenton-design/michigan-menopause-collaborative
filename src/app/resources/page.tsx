@@ -18,23 +18,12 @@ export default async function ResourcesPage() {
         lede={content.resources_header_lede}
       />
 
-      <section className="page section" style={{ paddingTop: 24 }}>
-        <SectionHeading eyebrow="This quarter" title="Recently posted" />
-        {current.length === 0 ? (
-          <div
-            style={{
-              paddingTop: 24,
-              borderTop: "1px solid var(--rule-strong)",
-              color: "var(--ink-soft)",
-              fontSize: 16,
-              maxWidth: "48ch",
-            }}
-          >
-            Nothing new since the last meeting. Materials from the next gathering
-            will be posted here afterward — earlier meetings are in the archive
-            below.
-          </div>
-        ) : current.map((r, i) => (
+      {/* "Recently posted" is hidden entirely when nothing is current — it
+          reappears once new materials are posted for the next meeting. */}
+      {current.length > 0 && (
+        <section className="page section" style={{ paddingTop: 24 }}>
+          <SectionHeading eyebrow="This quarter" title="Recently posted" />
+          {current.map((r, i) => (
           <article
             key={i}
             style={{
@@ -81,8 +70,9 @@ export default async function ResourcesPage() {
               </div>
             </div>
           </article>
-        ))}
-      </section>
+          ))}
+        </section>
+      )}
 
       <section className="page section">
         <SectionHeading eyebrow="Archive" title="Past materials" />
