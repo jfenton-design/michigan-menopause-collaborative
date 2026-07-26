@@ -9,7 +9,6 @@ const LINKS = [
   { href: "/#mission",      label: "Mission" },
   { href: "/meetings",      label: "Meetings" },
   { href: "/leadership",    label: "Leadership" },
-  { href: "/members",       label: "Members" },
   { href: "/resources",     label: "Resources" },
   { href: "/submit-a-case", label: "Submit a case" },
 ];

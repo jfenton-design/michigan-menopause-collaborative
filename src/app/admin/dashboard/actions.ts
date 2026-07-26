@@ -3,8 +3,8 @@ import { put, del } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getMeetings, saveMeetings, getResources, saveResources, getMembers, saveMembers, getContent, saveContent } from '@/lib/admin-db';
-import type { Meeting, Resource, Member, SiteContent } from '@/lib/data';
+import { getMeetings, saveMeetings, getResources, saveResources, getContent, saveContent } from '@/lib/admin-db';
+import type { Meeting, Resource, SiteContent } from '@/lib/data';
 import { DEFAULT_CONTENT } from '@/lib/data';
 
 // LOGOUT
@@ -196,29 +196,6 @@ export async function deleteMeeting(formData: FormData) {
   redirect('/admin/dashboard?saved=1');
 }
 
-// MEMBERS
-export async function addMember(formData: FormData) {
-  const name = formData.get('name') as string;
-  const credentials = formData.get('credentials') as string;
-  const specialty = formData.get('specialty') as string;
-  const location = formData.get('location') as string;
-  const practice = formData.get('practice') as string;
-
-  const member: Member = { name, credentials, specialty, location, practice };
-  const members = await getMembers();
-  await saveMembers([...members, member]);
-  revalidatePath('/members');
-  redirect('/admin/dashboard?saved=1');
-}
-
-export async function deleteMember(formData: FormData) {
-  const name = formData.get('name') as string;
-  const members = await getMembers();
-  await saveMembers(members.filter(m => m.name !== name));
-  revalidatePath('/members');
-  redirect('/admin/dashboard?saved=1');
-}
-
 // SITE CONTENT
 export async function editContent(formData: FormData) {
   const current = await getContent();
@@ -233,7 +210,6 @@ export async function editContent(formData: FormData) {
   revalidatePath('/');
   revalidatePath('/meetings');
   revalidatePath('/resources');
-  revalidatePath('/members');
   revalidatePath('/leadership');
   revalidatePath('/submit-a-case');
   redirect('/admin/dashboard?saved=1');

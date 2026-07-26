@@ -18,7 +18,6 @@ export function Footer() {
           <ul>
             <li><Link href="/#mission">Mission</Link></li>
             <li><Link href="/leadership">Leadership &amp; Board</Link></li>
-            <li><Link href="/members">Member directory</Link></li>
             <li><Link href="/submit-a-case">Submit a case</Link></li>
           </ul>
         </div>
