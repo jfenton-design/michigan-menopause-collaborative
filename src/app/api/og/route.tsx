@@ -254,7 +254,7 @@ export async function GET(req: NextRequest) {
             ))}
             <circle r="30" fill="none" stroke="white" strokeWidth="2" />
           </svg>
-          <span style={{ display: 'flex', position: 'relative', fontSize: 13, fontWeight: 700, color: INK, letterSpacing: '-0.02em' }}>MMC</span>
+          <span style={{ display: 'flex', position: 'relative', fontSize: 13, fontWeight: 700, color: 'white', letterSpacing: '-0.02em' }}>MMC</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <span style={{ display: 'flex', fontSize: 30, fontWeight: 600, letterSpacing: '-0.02em', color: 'white', lineHeight: 1.05 }}>Michigan Menopause</span>
