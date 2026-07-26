@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { getResources, getContent } from '@/lib/admin-db';
-import { uploadResource, editResource, deleteResource, editContent } from '../../actions';
+import { getResources } from '@/lib/admin-db';
+import { uploadResource, editResource, deleteResource } from '../../actions';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { MeetingsTabs } from '@/components/admin/MeetingsTabs';
 import { SavedBanner } from '@/components/admin/SavedBanner';
@@ -10,17 +10,15 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Resources · MMC Admin' };
 
 const RESOURCE_TYPES = ['Meeting notes', 'Article', 'Reference', 'Handout', 'Other'];
-const REDIRECT_TO = '/admin/dashboard/meetings/resources';
 
 export default async function MeetingsResourcesPage({
   searchParams,
 }: {
   searchParams: Promise<{ saved?: string; edit?: string }>;
 }) {
-  const [{ saved, edit }, resources, content] = await Promise.all([
+  const [{ saved, edit }, resources] = await Promise.all([
     searchParams,
     getResources(),
-    getContent(),
   ]);
 
   return (
@@ -131,22 +129,6 @@ export default async function MeetingsResourcesPage({
               </div>
             </>
           )}
-        </div>
-
-        {/* ── RESOURCES PAGE COPY ── */}
-        <div style={s.card}>
-          <h2 style={s.sectionTitle}>Resources page copy</h2>
-          <p style={{ fontSize: 14, color: '#7a6e8a', marginTop: -12, marginBottom: 20 }}>
-            The wording on the public <strong>/resources</strong> page.
-          </p>
-          <form action={editContent}>
-            <input type="hidden" name="redirectTo" value={REDIRECT_TO} />
-            <div style={{ ...s.fieldGroup, marginBottom: 24 }}>
-              <label style={s.label}>Header lede</label>
-              <textarea name="resources_header_lede" defaultValue={content.resources_header_lede} rows={3} style={{ ...s.input, resize: 'vertical' }} />
-            </div>
-            <button type="submit" style={s.submitBtn}>Save resources copy</button>
-          </form>
         </div>
 
       </div>
