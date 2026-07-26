@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { getMeetings, getContent } from '@/lib/admin-db';
-import { createMeeting, editMeeting, deleteMeeting, editContent } from '../actions';
+import { getMeetings } from '@/lib/admin-db';
+import { createMeeting, editMeeting, deleteMeeting } from '../actions';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { MeetingsTabs } from '@/components/admin/MeetingsTabs';
 import { SavedBanner } from '@/components/admin/SavedBanner';
+import { AddMeetingModal } from '@/components/admin/AddMeetingModal';
 import { s } from '@/components/admin/formStyles';
 
 export const dynamic = 'force-dynamic';
@@ -12,17 +13,14 @@ export const metadata = { title: 'Meetings · MMC Admin' };
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-const REDIRECT_TO = '/admin/dashboard/meetings';
-
 export default async function MeetingsSchedulePage({
   searchParams,
 }: {
   searchParams: Promise<{ saved?: string; editM?: string }>;
 }) {
-  const [{ saved, editM }, meetings, content] = await Promise.all([
+  const [{ saved, editM }, meetings] = await Promise.all([
     searchParams,
     getMeetings(),
-    getContent(),
   ]);
 
   return (
@@ -35,71 +33,16 @@ export default async function MeetingsSchedulePage({
 
         {/* ── MEETINGS ── */}
         <div id="meetings" style={s.card}>
-          <h2 style={s.sectionTitle}>Meetings</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 4 }}>
+            <h2 style={{ ...s.sectionTitle, margin: 0 }}>Meetings</h2>
+            <AddMeetingModal action={createMeeting} />
+          </div>
 
-          <form action={createMeeting}>
-            <div style={s.grid2}>
-              <div style={s.fieldGroup}>
-                <label style={s.label}>Quarter</label>
-                <input name="quarter" required style={s.input} placeholder="Summer 2026" />
-              </div>
-              <div style={s.fieldGroup}>
-                <label style={s.label}>Weekday</label>
-                <select name="weekday" required style={s.input}>
-                  {WEEKDAYS.map(d => <option key={d}>{d}</option>)}
-                </select>
-              </div>
-            </div>
-            <div style={s.grid2}>
-              <div style={s.fieldGroup}>
-                <label style={s.label}>Month</label>
-                <select name="month" required style={s.input}>
-                  {MONTHS.map(m => <option key={m}>{m}</option>)}
-                </select>
-              </div>
-              <div style={s.grid2}>
-                <div style={s.fieldGroup}>
-                  <label style={s.label}>Day</label>
-                  <input name="day" type="number" min={1} max={31} required style={s.input} placeholder="21" />
-                </div>
-                <div style={s.fieldGroup}>
-                  <label style={s.label}>Year</label>
-                  <input name="year" type="number" min={2024} max={2040} required style={s.input} placeholder="2026" />
-                </div>
-              </div>
-            </div>
-            <div style={s.fieldGroup}>
-              <label style={s.label}>Time</label>
-              <input name="time" required style={s.input} placeholder="6:30 — 8:00 PM" />
-            </div>
-            <div style={s.fieldGroup}>
-              <label style={s.label}>Location (full)</label>
-              <textarea
-                name="location"
-                required
-                rows={2}
-                style={{ ...s.input, resize: 'vertical' }}
-                placeholder={"Danialle's Clubhouse\n235 Pierce Street, Birmingham, MI"}
-              />
-            </div>
-            <div style={s.fieldGroup}>
-              <label style={s.label}>Location short</label>
-              <input name="locationShort" required style={s.input} placeholder="Danialle's Clubhouse · Birmingham" />
-            </div>
-            <div style={{ display: 'flex', gap: 24, marginBottom: 16 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer' }}>
-                <input type="checkbox" name="rsvpOpen" defaultChecked={false} />
-                RSVP open
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer' }}>
-                <input type="checkbox" name="showKarmanos" defaultChecked={true} />
-                Include Danialle&apos;s Clubhouse thank-you note
-              </label>
-            </div>
-            <button type="submit" style={s.submitBtn}>Add meeting</button>
-          </form>
-
-          {meetings.length > 0 && (
+          {meetings.length === 0 ? (
+            <p style={{ fontSize: 14, color: '#7a6e8a', marginTop: 16 }}>
+              No meetings yet — use <strong>Add meeting</strong> to create the first one.
+            </p>
+          ) : (
             <>
               <div style={s.divider} />
               <div>
@@ -306,48 +249,6 @@ export default async function MeetingsSchedulePage({
               </div>
             </>
           )}
-        </div>
-
-        {/* ── MEETINGS PAGE COPY ── */}
-        <div style={s.card}>
-          <h2 style={s.sectionTitle}>Meetings page copy</h2>
-          <p style={{ fontSize: 14, color: '#7a6e8a', marginTop: -12, marginBottom: 20 }}>
-            The wording on the public <strong>/meetings</strong> page.
-          </p>
-          <form action={editContent}>
-            <input type="hidden" name="redirectTo" value={REDIRECT_TO} />
-
-            <div style={s.fieldGroup}>
-              <label style={s.label}>Header lede</label>
-              <textarea name="meetings_header_lede" defaultValue={content.meetings_header_lede} rows={3} style={{ ...s.input, resize: 'vertical' }} />
-            </div>
-            <div style={{ ...s.fieldGroup, marginBottom: 28 }}>
-              <label style={s.label}>Past meetings note</label>
-              <input name="meetings_past_note" defaultValue={content.meetings_past_note} style={s.input} />
-            </div>
-
-            <p style={{ fontSize: 12, fontFamily: 'var(--font-plex-mono), monospace', color: '#7a6e8a', margin: '0 0 14px', letterSpacing: '0.04em' }}>THE CADENCE — each season has a headline and a sub-note</p>
-            {([
-              { season: 'Spring', noteKey: 'cadence_spring_note', asideKey: 'cadence_spring_aside' },
-              { season: 'Summer', noteKey: 'cadence_summer_note', asideKey: 'cadence_summer_aside' },
-              { season: 'Fall',   noteKey: 'cadence_fall_note',   asideKey: 'cadence_fall_aside' },
-              { season: 'Winter', noteKey: 'cadence_winter_note', asideKey: 'cadence_winter_aside' },
-            ] as const).map(({ season, noteKey, asideKey }) => (
-              <div key={season} style={{ ...s.grid2, marginBottom: 12 }}>
-                <div style={s.fieldGroup}>
-                  <label style={s.label}>{season} — headline</label>
-                  <input name={noteKey} defaultValue={content[noteKey]} style={s.input} />
-                </div>
-                <div style={{ ...s.fieldGroup, marginBottom: 0 }}>
-                  <label style={s.label}>{season} — sub-note</label>
-                  <input name={asideKey} defaultValue={content[asideKey]} style={s.input} />
-                </div>
-              </div>
-            ))}
-            <div style={{ marginBottom: 24 }} />
-
-            <button type="submit" style={s.submitBtn}>Save meetings copy</button>
-          </form>
         </div>
 
       </div>
