@@ -100,6 +100,19 @@ export default async function WebsiteContentPage({
 
             <div style={s.divider} />
 
+            {/* Meetings page */}
+            <h3 style={s.subheading}>Meetings page</h3>
+            <div style={s.fieldGroup}>
+              <label style={s.label}>Header lede</label>
+              <textarea name="meetings_header_lede" defaultValue={content.meetings_header_lede} rows={3} style={{ ...s.input, resize: 'vertical' }} />
+            </div>
+            <div style={{ ...s.fieldGroup, marginBottom: 28 }}>
+              <label style={s.label}>Past meetings note</label>
+              <input name="meetings_past_note" defaultValue={content.meetings_past_note} style={s.input} />
+            </div>
+
+            <div style={s.divider} />
+
             {/* Leadership & Board */}
             <h3 style={s.subheading}>Leadership &amp; Board</h3>
             <div style={s.fieldGroup}>
