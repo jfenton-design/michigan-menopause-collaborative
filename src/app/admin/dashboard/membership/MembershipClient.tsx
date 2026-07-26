@@ -2,8 +2,8 @@
 import * as React from 'react';
 import type { Meeting } from '@/lib/data';
 import type { CheckinMember } from '@/lib/checkin-data';
-import { BloomMark } from '@/components/Logo';
-import { uploadCheckinPhoto } from '../checkin/actions';
+import { AdminHeader } from '@/components/admin/AdminHeader';
+import { uploadCheckinPhoto } from '../meetings/checkin/actions';
 import { syncRsvpsFromSheet, persistRoster } from './actions';
 import styles from './membership.module.css';
 
@@ -349,21 +349,7 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
 
   return (
     <div className={styles.wrap}>
-      <header className={styles.header}>
-        <div className={styles.hrow}>
-          <div className={styles.brand}>
-            <BloomMark dim={32} ink="white" accent="#9B6FFF" />
-            <div>
-              <h1 className={styles.title}>MMC Admin Panel</h1>
-              <p className={styles.sub}>Membership</p>
-            </div>
-          </div>
-        </div>
-        <div className={styles.navTabs}>
-          <a href="/admin/dashboard" className={cx(styles.navTab, styles.backlink)}>← Dashboard</a>
-          <span className={cx(styles.navTab, styles.navTabActive)}>Directory</span>
-        </div>
-      </header>
+      <AdminHeader active="membership" />
 
       <div className={styles.content}>
         <>

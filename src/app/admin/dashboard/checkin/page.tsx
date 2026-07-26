@@ -1,12 +1,6 @@
-import * as React from 'react';
-import { getMeetings } from '@/lib/admin-db';
-import { getCheckinRoster } from '@/lib/checkin-db';
-import { CheckinClient } from './CheckinClient';
+import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Check-In · MMC Admin' };
-
-export default async function CheckinPage() {
-  const [meetings, roster] = await Promise.all([getMeetings(), getCheckinRoster()]);
-  return <CheckinClient initialMeetings={meetings} initialRoster={roster} />;
+// Check-In moved under Meetings. Keep old bookmarks working.
+export default function LegacyCheckinRedirect() {
+  redirect('/admin/dashboard/meetings/checkin');
 }

@@ -6,7 +6,7 @@ import type { CheckinMember } from '@/lib/checkin-data';
 
 export async function persistRoster(roster: CheckinMember[]): Promise<void> {
   await saveCheckinRoster(roster);
-  revalidatePath('/admin/dashboard/checkin');
+  revalidatePath('/admin/dashboard/meetings/checkin');
 }
 
 export async function uploadCheckinPhoto(memberId: string, formData: FormData): Promise<string> {
