@@ -196,6 +196,27 @@ export async function deleteMeeting(formData: FormData) {
   redirect('/admin/dashboard/meetings?saved=1');
 }
 
+// HOME HERO IMAGE
+// The homepage hero photo. Uploaded here (separate from the text-content form
+// because it's a file), stored in blob, and saved onto content.home_hero_image
+// which the homepage reads. Falls back to the founding-meeting photo when unset.
+export async function uploadHeroImage(formData: FormData) {
+  const file = formData.get('heroImage') as File | null;
+  if (file && file.size > 0) {
+    const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+    const blob = await put(`mmc/hero/home.${ext}`, file, {
+      access: 'private',
+      contentType: file.type || 'image/jpeg',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    });
+    const current = await getContent();
+    await saveContent({ ...DEFAULT_CONTENT, ...current, home_hero_image: blob.url });
+    revalidatePath('/');
+  }
+  redirect('/admin/dashboard/content?saved=1');
+}
+
 // SITE CONTENT
 export async function editContent(formData: FormData) {
   const current = await getContent();

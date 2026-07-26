@@ -127,12 +127,23 @@ export async function GET(req: NextRequest) {
       } catch { /* ignore */ }
     }
 
-    // Founding-meeting photograph (homepage hero) — only needed for the photo variant.
+    // Homepage hero photograph — only needed for the photo variant. Uses the
+    // image set in the admin (Content → Home hero image), matching the homepage;
+    // falls back to the founding-meeting photo.
     let photoSrc: string | null = null;
     if (variant === 'photo') {
+      let heroUrl = '/assets/founding-meeting.jpg';
+      if (token) {
+        const content = await readBlobJson<{ home_hero_image?: string }>('mmc/content.json', {}, token);
+        if (content.home_hero_image) heroUrl = content.home_hero_image;
+      }
       try {
-        const res = await fetch(new URL('/assets/founding-meeting.jpg', req.nextUrl.origin).toString());
-        if (res.ok) {
+        const isPrivateBlob = heroUrl.startsWith(BLOB_BASE);
+        const absUrl = heroUrl.startsWith('http') ? heroUrl : new URL(heroUrl, req.nextUrl.origin).toString();
+        const res = isPrivateBlob
+          ? (token ? await fetchPrivateBlob(absUrl, token) : null)
+          : await fetch(absUrl);
+        if (res && res.ok) {
           const mime = res.headers.get('content-type') ?? 'image/jpeg';
           photoSrc = toDataImg(await res.arrayBuffer(), mime);
         }

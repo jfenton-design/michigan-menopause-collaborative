@@ -8,6 +8,15 @@ import { getContent, getMeetings } from "@/lib/admin-db";
 
 export const dynamic = 'force-dynamic';
 
+// The hero photo is set in the admin (Content → Home hero image). Private blob
+// uploads render through the /api/img proxy; the default /assets path (or any
+// absolute URL) renders directly.
+const BLOB_ORIGIN = "https://bfbwrnmnnw2zzg0c.private.blob.vercel-storage.com/";
+function heroSrc(url?: string): string {
+  if (!url) return "/assets/founding-meeting.jpg";
+  return url.startsWith(BLOB_ORIGIN) ? `/api/img?url=${encodeURIComponent(url)}` : url;
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const allMeetings = await getMeetings();
   const nextMeeting = allMeetings.find(m => m.rsvpOpen) ?? allMeetings[0] ?? NEXT_MEETING;
@@ -83,10 +92,11 @@ export default async function HomePage() {
             }}
           >
             <Image
-              src="/assets/founding-meeting.jpg"
-              alt="Founding meeting of the Michigan Menopause Collaborative — practitioners seated together in a teal-walled Birmingham room, beneath a butterfly painting."
+              src={heroSrc(content.home_hero_image)}
+              alt="Michigan Menopause Collaborative — practitioners gathered together."
               width={2000}
               height={957}
+              unoptimized={heroSrc(content.home_hero_image).startsWith("/api/img")}
               priority
               sizes="(max-width: 1240px) 100vw, 1240px"
               style={{
