@@ -44,8 +44,9 @@ export default async function WebsiteContentPage({
           <h3 style={s.subheading}>Home hero image</h3>
           <p style={{ fontSize: 13, color: '#7a6e8a', margin: '0 0 14px' }}>
             The large photo on the homepage. Recommended: <strong>2000 × 960 px</strong>{' '}
-            (a wide landscape, roughly 2:1), <strong>JPEG or WebP</strong>, up to 10&nbsp;MB.
-            It&apos;s cropped to a wide banner, so keep the important part near the centre.
+            (a wide landscape, roughly 2:1), <strong>JPEG or WebP</strong>, up to 10&nbsp;MB —
+            large photos are optimised automatically. It&apos;s cropped to a wide banner, so
+            keep the important part near the centre.
           </p>
           <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 16 }}>
             <div>
