@@ -220,7 +220,9 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
   }
 
   async function handlePhoto(memberId: string, file: File): Promise<void> {
-    const blob = await downscaleImage(file, 320);
+    // 1200px keeps the shared photo crisp on the Leadership page (portrait
+    // renders ~480px, ~960px on retina) while staying small for the avatars.
+    const blob = await downscaleImage(file, 1200);
     const fd = new FormData();
     fd.set('photo', blob, 'photo.jpg');
     const url = await uploadCheckinPhoto(memberId, fd);
