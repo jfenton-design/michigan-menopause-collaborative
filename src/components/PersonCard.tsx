@@ -10,6 +10,7 @@ export function PersonCard({ p }: { p: Person }) {
             src={p.photo}
             alt={`Portrait of ${p.name}`}
             fill
+            quality={90}
             style={{ objectFit: "cover", objectPosition: "center top" }}
             sizes="(max-width: 880px) 100vw, 480px"
           />

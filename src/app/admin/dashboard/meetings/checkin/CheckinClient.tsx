@@ -562,7 +562,9 @@ function EditSheet({
     if (!file) return;
     setUploading(true);
     try {
-      const blob = await downscaleImage(file, 240);
+      // Same shared photo feeds the Leadership portrait, so keep it high enough
+      // res there (not just the tiny check-in avatar).
+      const blob = await downscaleImage(file, 1200);
       const fd = new FormData();
       fd.set('photo', blob, 'photo.jpg');
       const url = await uploadCheckinPhoto(member.id, fd);
