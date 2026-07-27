@@ -213,8 +213,11 @@ export async function uploadHeroImage(formData: FormData) {
     const current = await getContent();
     await saveContent({ ...DEFAULT_CONTENT, ...current, home_hero_image: blob.url });
     revalidatePath('/');
+    revalidatePath('/admin/dashboard/content');
   }
-  redirect('/admin/dashboard/content?saved=1');
+  // No redirect: this action is invoked imperatively from the client uploader,
+  // which navigates on success. (redirect() thrown from an imperative call gets
+  // swallowed by the caller's try/catch.)
 }
 
 // SITE CONTENT

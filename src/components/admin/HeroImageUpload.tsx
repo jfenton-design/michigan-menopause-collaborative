@@ -14,25 +14,38 @@ function sizeMb(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
 
-// Decode → downscale (never upscale) → re-encode as JPEG. Runs entirely in the
-// browser, honouring EXIF orientation.
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Could not decode image'));
+    img.src = src;
+  });
+}
+
+// Decode → downscale (never upscale) → re-encode as JPEG, using a plain <img>
+// element for maximum browser compatibility (Safari's createImageBitmap options
+// support is unreliable). Modern browsers apply EXIF orientation when drawing.
 async function downscaleToJpeg(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  const url = URL.createObjectURL(file);
   try {
-    const scale = Math.min(1, MAX_WIDTH / bitmap.width);
-    const w = Math.max(1, Math.round(bitmap.width * scale));
-    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const img = await loadImage(url);
+    const sw = img.naturalWidth || img.width;
+    const sh = img.naturalHeight || img.height;
+    const scale = Math.min(1, MAX_WIDTH / sw);
+    const w = Math.max(1, Math.round(sw * scale));
+    const h = Math.max(1, Math.round(sh * scale));
     const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas 2D context unavailable');
-    ctx.drawImage(bitmap, 0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
     const blob: Blob | null = await new Promise(res => canvas.toBlob(res, 'image/jpeg', JPEG_QUALITY));
     if (!blob) throw new Error('Image encoding failed');
     return blob;
   } finally {
-    bitmap.close?.();
+    URL.revokeObjectURL(url);
   }
 }
 
@@ -40,7 +53,7 @@ async function downscaleToJpeg(file: File): Promise<Blob> {
  * Hero-image uploader. Optimises the chosen photo in the browser (downscale +
  * JPEG re-encode) before handing it to the uploadHeroImage server action, so
  * any image up to 10 MB uploads cleanly instead of hitting Vercel's ~4.5 MB
- * Server Action body limit.
+ * Server Action body limit. Navigates on success (the action does not redirect).
  */
 export function HeroImageUpload({
   action,
@@ -64,16 +77,32 @@ export function HeroImageUpload({
 
     setBusy(true);
     setError(null);
+
+    // 1) Optimise the image in the browser.
+    let optimized: Blob;
     try {
-      const optimized = await downscaleToJpeg(file);
+      optimized = await downscaleToJpeg(file);
+    } catch (err) {
+      console.error('[hero] image processing failed', err);
+      setError('Sorry — that image couldn’t be processed. Try a different JPEG or PNG.');
+      setBusy(false);
+      return;
+    }
+
+    // 2) Upload it.
+    try {
       const fd = new FormData();
       fd.append('heroImage', optimized, 'home.jpg');
-      // Server action stores the image and redirects back with ?saved=1.
       await action(fd);
-    } catch {
-      setError('Sorry — that image couldn’t be processed. Try a JPEG or PNG.');
+    } catch (err) {
+      console.error('[hero] upload failed', err);
+      setError('Upload failed — please try again.');
       setBusy(false);
+      return;
     }
+
+    // 3) Refresh to show the new hero + saved banner.
+    window.location.assign('/admin/dashboard/content?saved=1');
   }
 
   return (
