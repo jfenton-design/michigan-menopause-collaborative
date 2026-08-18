@@ -8,11 +8,20 @@ const ACCENT = '#6B3FCB';
 const PAPER = '#F7F4FB';
 const PAPER_2 = '#E8DEF7';
 const INK_SOFT = '#7A6E96';
-const LOGO_URL = 'https://michiganmenopause.com/assets/mmc-logo.png';
+// Canonical host. The apex domain 307-redirects to www, and redirected links /
+// images are handled inconsistently by email clients — so point at the real host.
+const SITE_ORIGIN = 'https://www.michiganmenopause.com';
+const LOGO_URL = `${SITE_ORIGIN}/assets/mmc-logo.png`;
 
 function articlePdfUrl(m: Meeting): string | null {
   if (!m.articleUrl) return null;
-  return `https://michiganmenopause.com/api/pdf?url=${encodeURIComponent(m.articleUrl)}`;
+  return `${SITE_ORIGIN}/api/pdf?url=${encodeURIComponent(m.articleUrl)}`;
+}
+
+// The public RSVP page reads ?meeting= and pre-selects that meeting, so the
+// button lands on the right one even when it isn't the next meeting up.
+function rsvpUrl(m: Meeting): string {
+  return `${SITE_ORIGIN}/rsvp?meeting=${encodeURIComponent(m.id)}`;
 }
 
 function defaultSubject(m: Meeting): string {
@@ -31,8 +40,9 @@ function buildEmailHtml(args: {
   intro: string;
   meeting: Meeting;
   includeArticle: boolean;
+  includeRsvp: boolean;
 }): string {
-  const { subject, intro, meeting: m, includeArticle } = args;
+  const { subject, intro, meeting: m, includeArticle, includeRsvp } = args;
   const dateStr = `${m.weekday}, ${m.month} ${m.day}, ${m.year}`;
   const locationHtml = m.location.split('\n').join('<br>');
   const introHtml = intro.split('\n').join('<br>');
@@ -61,6 +71,17 @@ function buildEmailHtml(args: {
           </tr>
         </table>`
       : '';
+
+  const rsvpSection = includeRsvp
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:28px;border-top:1px solid ${PAPER_2}">
+          <tr>
+            <td align="center" style="padding-top:26px">
+              <a href="${rsvpUrl(m)}" style="display:inline-block;background:${ACCENT};color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;padding:14px 32px;border-radius:8px">RSVP for this meeting &rarr;</a>
+              <div style="margin-top:12px;font-size:12px;line-height:1.5;color:${INK_SOFT};font-family:Arial,Helvetica,sans-serif">Can&rsquo;t make it? Let us know there too &mdash; it helps us confirm seating with our host.</div>
+            </td>
+          </tr>
+        </table>`
+    : '';
 
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${PAPER};font-family:Arial,Helvetica,sans-serif"><tr><td align="center" style="padding:24px 12px">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid ${PAPER_2}">
@@ -94,6 +115,7 @@ function buildEmailHtml(args: {
           ${topicRow}
         </table>
         ${articleSection}
+        ${rsvpSection}
       </td>
     </tr>
     <tr>
@@ -110,8 +132,9 @@ function buildPlainText(args: {
   intro: string;
   meeting: Meeting;
   includeArticle: boolean;
+  includeRsvp: boolean;
 }): string {
-  const { intro, meeting: m, includeArticle } = args;
+  const { intro, meeting: m, includeArticle, includeRsvp } = args;
   const dateStr = `${m.weekday}, ${m.month} ${m.day}, ${m.year}`;
   const pdfUrl = articlePdfUrl(m);
   return [
@@ -123,6 +146,7 @@ function buildPlainText(args: {
     m.topic ? `Topic: ${m.topic}${m.topicPresenter ? ` — ${m.topicPresenter}` : ''}` : '',
     includeArticle && m.articleTitle ? `Discussion article: ${m.articleTitle}` : '',
     includeArticle && pdfUrl ? `Download: ${pdfUrl}` : '',
+    includeRsvp ? `RSVP for this meeting: ${rsvpUrl(m)}` : '',
     '',
     'Michigan Menopause Collaborative · michiganmenopause.com',
   ]
@@ -137,6 +161,7 @@ export function EmailTemplateBuilder({ meetings }: { meetings: Meeting[] }) {
   const [subject, setSubject] = React.useState(initialMeeting ? defaultSubject(initialMeeting) : '');
   const [intro, setIntro] = React.useState(initialMeeting ? defaultIntro(initialMeeting) : '');
   const [includeArticle, setIncludeArticle] = React.useState(!!initialMeeting?.articleUrl);
+  const [includeRsvp, setIncludeRsvp] = React.useState(!!initialMeeting?.rsvpOpen);
   const [copyStatus, setCopyStatus] = React.useState<'idle' | 'copied' | 'failed'>('idle');
   const [subjectCopyStatus, setSubjectCopyStatus] = React.useState<'idle' | 'copied'>('idle');
 
@@ -151,12 +176,14 @@ export function EmailTemplateBuilder({ meetings }: { meetings: Meeting[] }) {
       setSubject(defaultSubject(m));
       setIntro(defaultIntro(m));
       setIncludeArticle(!!m.articleUrl);
+      setIncludeRsvp(!!m.rsvpOpen);
     }
   }
 
-  const html = meeting ? buildEmailHtml({ subject, intro, meeting, includeArticle }) : '';
-  const text = meeting ? buildPlainText({ subject, intro, meeting, includeArticle }) : '';
+  const html = meeting ? buildEmailHtml({ subject, intro, meeting, includeArticle, includeRsvp }) : '';
+  const text = meeting ? buildPlainText({ subject, intro, meeting, includeArticle, includeRsvp }) : '';
   const pdfUrl = meeting ? articlePdfUrl(meeting) : null;
+  const rsvpHref = meeting ? rsvpUrl(meeting) : null;
 
   async function handleCopy() {
     setCopyStatus('idle');
@@ -287,12 +314,33 @@ export function EmailTemplateBuilder({ meetings }: { meetings: Meeting[] }) {
         />
       </div>
 
-      {meeting.articleTitle && (
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer', marginBottom: 20 }}>
-          <input type="checkbox" checked={includeArticle} onChange={e => setIncludeArticle(e.target.checked)} />
-          Include discussion article ({meeting.articleTitle})
+      <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>
+        {meeting.articleTitle && (
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer' }}>
+            <input type="checkbox" checked={includeArticle} onChange={e => setIncludeArticle(e.target.checked)} />
+            Include discussion article ({meeting.articleTitle})
+          </label>
+        )}
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer' }}>
+          <input type="checkbox" checked={includeRsvp} onChange={e => setIncludeRsvp(e.target.checked)} />
+          Include RSVP button
         </label>
-      )}
+        {includeRsvp && rsvpHref && (
+          <div style={{ fontSize: 12, color: '#7a6e8a', paddingLeft: 24, lineHeight: 1.5 }}>
+            Links to{' '}
+            <a href={rsvpHref} target="_blank" rel="noopener noreferrer" style={{ color: '#6D3BE4' }}>
+              {rsvpHref.replace('https://', '')}
+            </a>
+            {!meeting.rsvpOpen && (
+              <>
+                {' '}&mdash; heads up, this meeting is currently marked{' '}
+                <strong>RSVP closed</strong> under Meetings. The form still works, but the
+                site won&apos;t show an RSVP link for it.
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       <div style={{ marginBottom: 16, padding: '14px 18px', background: '#F5F3FB', borderRadius: 8, fontSize: 13, color: '#5a5168', lineHeight: 1.5 }}>
         Click <strong>Copy email</strong>, then open a new message in Gmail, click into the body, and paste (Cmd/Ctrl+V).
