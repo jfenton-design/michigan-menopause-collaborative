@@ -4,7 +4,8 @@ import { after } from "next/server";
 import { appendSubmission } from "@/lib/storage";
 import { appendRsvp } from "@/lib/sheets";
 import { sendNotification, sendConfirmation } from "@/lib/email";
-import { UPCOMING_MEETINGS } from "@/lib/data";
+import { UPCOMING_MEETINGS, type Meeting } from "@/lib/data";
+import { getMeetings } from "@/lib/admin-db";
 
 export type RsvpFormState =
   | { status: "idle" }
@@ -35,7 +36,12 @@ export async function submitRsvp(
   const attendingRaw = get("attending"); // "yes" | "no" | "maybe"
   const attending = attendingRaw !== "no";
 
-  const meeting = UPCOMING_MEETINGS.find((m) => m.id === meetingId);
+  // Meetings live in the admin store; fall back to the built-in list if the
+  // store is unreachable so an RSVP is never rejected for the wrong reason.
+  const allMeetings = await getMeetings().catch(() => [] as Meeting[]);
+  const meeting =
+    allMeetings.find((m) => m.id === meetingId) ??
+    UPCOMING_MEETINGS.find((m) => m.id === meetingId);
   if (!meeting) {
     return { status: "error", message: "Please choose which meeting you're RSVPing for." };
   }

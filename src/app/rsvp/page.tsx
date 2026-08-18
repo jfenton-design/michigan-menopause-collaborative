@@ -2,15 +2,55 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { RsvpForm } from "./RsvpForm";
-import { NEXT_MEETING } from "@/lib/data";
+import { NEXT_MEETING, type Meeting } from "@/lib/data";
+import { getMeetings } from "@/lib/admin-db";
 
-export const metadata: Metadata = {
-  title: "RSVP",
-  description: `RSVP for the next Michigan Menopause Collaborative meeting — ${NEXT_MEETING.quarter}, ${NEXT_MEETING.month} ${NEXT_MEETING.day}.`,
-};
+export const dynamic = "force-dynamic";
 
-export default async function RsvpPage() {
-  const selected = NEXT_MEETING;
+type SearchParams = Promise<{ meeting?: string }>;
+
+/**
+ * Meeting links across the site (and in the admin reminder email) carry
+ * `?meeting=<id>`. Honour it when it points at a real, still-upcoming meeting;
+ * otherwise fall back to whichever meeting currently has RSVP open.
+ */
+async function resolveMeeting(
+  requestedId?: string,
+): Promise<{ meeting: Meeting; isDefault: boolean }> {
+  const all = await getMeetings().catch(() => [] as Meeting[]);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isUpcoming = (m: Meeting) => {
+    const d = new Date(`${m.month} ${m.day}, ${m.year}`);
+    return isNaN(d.getTime()) || d >= today;
+  };
+
+  const fallback =
+    all.find((m) => m.rsvpOpen) ?? all.find(isUpcoming) ?? all[0] ?? NEXT_MEETING;
+
+  const requested = requestedId ? all.find((m) => m.id === requestedId) : undefined;
+  if (requested && isUpcoming(requested) && requested.id !== fallback.id) {
+    return { meeting: requested, isDefault: false };
+  }
+  return { meeting: fallback, isDefault: true };
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}): Promise<Metadata> {
+  const { meeting } = await searchParams;
+  const { meeting: selected } = await resolveMeeting(meeting);
+  return {
+    title: "RSVP",
+    description: `RSVP for the next Michigan Menopause Collaborative meeting — ${selected.quarter}, ${selected.month} ${selected.day}.`,
+  };
+}
+
+export default async function RsvpPage({ searchParams }: { searchParams: SearchParams }) {
+  const { meeting: requestedId } = await searchParams;
+  const { meeting: selected, isDefault: isDefaultMeeting } = await resolveMeeting(requestedId);
 
   return (
     <>
@@ -46,7 +86,7 @@ export default async function RsvpPage() {
           >
             <div>
               <div className="eyebrow" style={{ marginBottom: 14 }}>
-                The next meeting
+                {isDefaultMeeting ? "The next meeting" : "This meeting"}
               </div>
               <div
                 style={{
