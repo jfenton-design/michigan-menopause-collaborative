@@ -343,6 +343,13 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
     }
   });
 
+  /* Emails for whoever is currently listed — respects both the search box and
+   * the active filter, so the number on the button is exactly what gets pasted.
+   * De-duplicated because the same address can sit on more than one contact. */
+  const shownEmails = Array.from(
+    new Set(dirList.map(m => (m.email || '').trim().toLowerCase()).filter(Boolean))
+  );
+
   const selected = selectedId ? roster.find(m => m.id === selectedId) ?? null : null;
 
   const mscpCount = roster.filter(m => (m.mscp || '').toLowerCase() === 'certified').length;
@@ -383,6 +390,15 @@ export function MembershipClient({ initialMeetings, initialRoster }: { initialMe
                 <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>
                 <input value={query} onChange={e => setQuery(e.target.value.trim().toLowerCase())} type="search" placeholder="Search name, practice, specialty, email…" />
               </div>
+              <button
+                className={cx(styles.btn, styles.btnGhost)}
+                disabled={shownEmails.length === 0}
+                style={shownEmails.length === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                onClick={() => copyText(shownEmails.join(', '), `Copied ${shownEmails.length} email${shownEmails.length === 1 ? '' : 's'} — paste into Bcc`)}
+                title="Copy the email addresses of everyone currently listed. Paste into Bcc so recipients don't see each other's addresses."
+              >
+                ⧉ Copy {shownEmails.length} email{shownEmails.length === 1 ? '' : 's'}
+              </button>
               <button className={cx(styles.btn, styles.btnGhost)} onClick={handleDownloadPdf} title="Download the current member directory as a branded PDF">⤓ Download PDF ({memberCount})</button>
               <button className={cx(styles.btn, styles.btnBrand)} onClick={handleAddContact}>＋ New contact</button>
             </div>
