@@ -31,7 +31,6 @@ export async function submitRsvp(
   const phone = get("phone");
   const guestCount = parseInt(get("guestCount") || "0", 10) || 0;
   const guestNames = get("guestNames");
-  const dietary = get("dietary");
   const notes = get("notes");
   const attendingRaw = get("attending"); // "yes" | "no" | "maybe"
   const attending = attendingRaw !== "no";
@@ -58,7 +57,7 @@ export async function submitRsvp(
   const payload = {
     meetingId, meetingLabel, attendingRaw,
     name, credentials, email, phone, practice,
-    guestCount, guestNames, dietary, notes,
+    guestCount, guestNames, notes,
   };
 
   // Primary store — await so we can confirm it succeeded
@@ -92,7 +91,6 @@ export async function submitRsvp(
         { label: "Practice",    value: practice },
         { label: "Guests",      value: String(guestCount) },
         { label: "Guest names", value: guestNames },
-        { label: "Dietary",     value: dietary },
         { label: "Notes",       value: notes },
       ],
     });

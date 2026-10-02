@@ -127,11 +127,6 @@ export function RsvpForm({ defaultMeeting }: { defaultMeeting: string }) {
       </div>
 
       <div className="field">
-        <label htmlFor="rsvp-dietary">Dietary needs / accessibility</label>
-        <input id="rsvp-dietary" name="dietary" placeholder="Vegetarian, gluten-free, step-free entry, etc." />
-      </div>
-
-      <div className="field">
         <label htmlFor="rsvp-notes">Anything else for the host?</label>
         <textarea id="rsvp-notes" name="notes" rows={3} placeholder="Optional — questions for the room, expected arrival, etc." />
       </div>

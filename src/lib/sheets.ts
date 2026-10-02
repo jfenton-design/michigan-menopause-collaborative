@@ -115,7 +115,7 @@ export async function appendRsvp(p: Record<string, unknown>): Promise<void> {
     String(p.practice      ?? ""),
     String(p.guestCount    ?? "0"),
     String(p.guestNames    ?? ""),
-    String(p.dietary       ?? ""),
+    "", // dietary — removed from the RSVP; column kept empty to preserve the sheet schema
     String(p.notes         ?? ""),
   ]]);
 }
